@@ -1,0 +1,20 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Board-specific GN arguments
+board_name = "soliloquy"
+target_cpu = "arm64"
+
+# Kernel command line arguments
+# - kernel.serial=legacy: Enable legacy serial console
+# - kernel.physmap=standard: Standard physical memory mapping
+board_bootfs_labels = []
+board_zedboot_labels = []
+board_recovery_labels = []
+
+# Board-specific drivers to include
+board_driver_package_labels = [
+  "//boards/arm64/soliloquy/drivers/wifi/aic8800", # Our ported driver
+  # Add other essential drivers here (UART, GPIO, etc.)
+]

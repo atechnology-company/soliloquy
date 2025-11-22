@@ -1,0 +1,33 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/fuchsia/rules.gni")
+import("//build/driver_package.gni")
+
+driver_module("aic8800_driver") {
+  output_name = "aic8800"
+  sources = [
+    "aic8800.cc",
+    "aic8800.h",
+    "aic8800_sdio.cc",
+  ]
+  deps = [
+    "//src/devices/lib/driver",
+    "//src/lib/ddk",
+    "//src/lib/ddktl",
+    "//zircon/system/ulib/fbl",
+    "//zircon/system/ulib/zx",
+    # Add SDIO protocol dependency here
+    # "//sdk/banjo/ddk.protocol.sdio",
+  ]
+}
+
+driver_package("aic8800") {
+  deps = [ ":aic8800_driver" ]
+  drivers = [
+    {
+      name = "aic8800.so"
+    },
+  ]
+}

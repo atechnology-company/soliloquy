@@ -1,0 +1,33 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Hardware topology for Allwinner A527
+# This file defines the hardware configuration that the kernel and drivers use.
+
+declare_args() {
+  # Board specific arguments
+}
+
+# Board configuration
+board_description = "Radxa Cubie A5E (Allwinner A527)"
+
+# SoC Configuration
+soc_vendor = "Allwinner"
+soc_model = "A527"
+
+# CPU Configuration
+# 8x Cortex-A55 @ 1.8GHz
+cpu_arch = "arm64"
+cpu_cores = 8
+
+# Memory Configuration
+# 4GB LPDDR4
+ram_size_mb = 4096
+
+# Peripheral Configuration
+has_wifi = true
+wifi_chip = "aic8800"
+has_bluetooth = false # Disabled for now as per requirements
+has_gpu = true
+gpu_model = "Mali-G57 MC1"
