@@ -76,6 +76,21 @@ source tools/soliloquy/env.sh
 export PATH="$HOME/.local/bin:$PATH"
 bazel build //src/shell:soliloquy_shell_simple
 ```
+3. **Build:**
+   ```bash
+   # For macOS users with Linux server:
+   ./tools/soliloquy/ssh_build.sh user@linux-server
+   
+   # For Linux users (full build):
+   ./tools/soliloquy/setup.sh  # One-time setup
+   ./tools/soliloquy/build.sh
+   
+   # For cross-platform component development:
+   ./tools/soliloquy/setup_sdk.sh
+   ./tools/soliloquy/build_sdk.sh
+   ```
+
+   📖 **See [Build System Guide](docs/build.md)** for detailed build options and platform-specific instructions.
 
 ### Setup on Linux (Full Source Build - Advanced)
 
@@ -118,6 +133,8 @@ export FUCHSIA_SDK_VERSION=20231115.2
 soliloquy/
 ├── src/
 │   └── shell/              # Soliloquy Shell (Rust)
+├── ui/
+│   └── tauri-shell/        # UI Prototype (Tauri + Svelte)
 ├── drivers/
 │   └── wifi/aic8800/       # WiFi driver (C++)
 ├── boards/
@@ -140,10 +157,67 @@ Uses Bazel with Bzlmod (MODULE.bazel):
 
 ### Scripts
 
+- `tools/soliloquy/setup.sh` - Bootstrap full Fuchsia checkout (Linux)
 - `tools/soliloquy/setup_sdk.sh` - Download and configure SDK
-- `tools/soliloquy/build_bazel.sh` - Build with Bazel
+- `tools/soliloquy/build.sh` - Full Fuchsia build with Soliloquy (Linux)
+- `tools/soliloquy/ssh_build.sh` - Remote build from macOS to Linux
+- `tools/soliloquy/build_sdk.sh` - SDK-based cross-platform build
+- `tools/soliloquy/build_bazel.sh` - Bazel component build
 - `tools/soliloquy/flash.sh` - Flash to device (fastboot)
 - `tools/soliloquy/debug.sh` - Serial console debugging
+- `tools/soliloquy/dev_ui.sh` - Start UI prototype development server
+
+### UI Development
+
+The Soliloquy shell UI is prototyped using Tauri + Svelte for rapid development and design iteration:
+
+```bash
+# Start the UI development server
+./tools/soliloquy/dev_ui.sh
+
+# Or manually:
+cd ui/tauri-shell && npm install && npm run tauri:dev
+```
+
+**UI Stack:**
+- **Prototype**: Tauri + Svelte (for development)
+- **Production**: Servo + WebRender + V8 (in the actual OS)
+- **Design**: Svelte-based web UI (Plates vision)
+
+The UI prototype demonstrates:
+- Desktop shell interface with status bar and launcher
+- Web application rendering area (placeholder for Servo)
+- System integration patterns for the web-native OS
+
+### When to Use the UI Scaffold
+
+**Use the Tauri UI prototype when:**
+
+1. **UI/UX Design Phase**: Prototype and iterate on the desktop interface before implementing in Servo
+2. **Component Development**: Build and test individual UI components in isolation
+3. **User Testing**: Gather feedback on the desktop experience and interaction patterns
+4. **Design Reviews**: Generate screenshots and demos for stakeholders
+5. **Integration Testing**: Test web application compatibility with the shell interface
+
+**Development Workflow:**
+```bash
+# Quick development iteration
+./tools/soliloquy/dev_ui.sh
+
+# Build for screenshots/demos
+./tools/soliloquy/build_ui.sh
+
+# Serve built files for review
+cd ui/tauri-shell && npx serve build -p 3000
+```
+
+**Integration Path to Production:**
+1. **Phase 1**: Tauri prototype (current) - Design validation and user testing
+2. **Phase 2**: Port components to run in Servo browser engine
+3. **Phase 3**: Integration with Zircon system services and FIDL
+4. **Phase 4**: Full production deployment on Soliloquy OS with Servo runtime
+
+All build scripts support `--help` for detailed usage information.
 
 ## Architecture
 
