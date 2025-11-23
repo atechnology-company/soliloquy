@@ -2,8 +2,12 @@
 rustflags = [
     "-C", "link-arg=--target=aarch64-unknown-fuchsia",
     "-C", "link-arg=-L", 
-    "-C", "link-arg=${FUCHSIA_DIR}/prebuilt/third_party/clang/linux-x64/lib/aarch64-unknown-fuchsia/lib",
+    "-C", "link-arg=${FUCHSIA_DIR}/prebuilt/third_party/clang/${CLANG_HOST_ARCH}/lib/aarch64-unknown-fuchsia/lib",
 ]
 
 [build]
 target = "aarch64-unknown-fuchsia"
+
+# Note: When building, ensure FUCHSIA_DIR and CLANG_HOST_ARCH are set:
+# export FUCHSIA_DIR=/path/to/fuchsia
+# export CLANG_HOST_ARCH=linux-x64  # or mac-x64 for macOS
