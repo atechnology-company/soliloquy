@@ -38,11 +38,17 @@ Soliloquy is an experimental OS that brings web technologies to the system level
 ## Quick Start
 
 ### Prerequisites
-- macOS or Linux
-- Bazel (installed via Bazelisk)
+
+**For macOS:**
+- macOS 10.15 or later
+- Homebrew (install from https://brew.sh)
 - 10GB+ free disk space
 
-### Setup
+**For Linux:**
+- Fedora, RHEL, Debian, or Ubuntu
+- 10GB+ free disk space (20GB+ recommended for full source build)
+
+### Setup on macOS (SDK-Only - Recommended)
 
 1. **Clone repository:**
 ```bash
@@ -50,20 +56,60 @@ git clone https://github.com/yourusername/soliloquy.git
 cd soliloquy
 ```
 
-2. **Download Fuchsia SDK:**
+2. **Install Homebrew (if not already installed):**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+3. **Download Fuchsia SDK:**
 ```bash
 ./tools/soliloquy/setup_sdk.sh
 ```
 
-3. **Build:**
+4. **Set up environment:**
+```bash
+source tools/soliloquy/env.sh
+```
+
+5. **Build (Bazel-based):**
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 bazel build //src/shell:soliloquy_shell_simple
 ```
 
-4. **Run test:**
+### Setup on Linux (Full Source Build - Advanced)
+
+For full Fuchsia source tree development on Linux:
+
+1. **Clone repository:**
 ```bash
-./bazel-bin/src/shell/soliloquy_shell_simple
+git clone https://github.com/yourusername/soliloquy.git
+cd soliloquy
+```
+
+2. **Bootstrap Fuchsia:**
+```bash
+./tools/soliloquy/setup.sh
+```
+This will:
+- Install all dependencies (git, build tools, Python, etc.)
+- Clone the Fuchsia repository
+- Bootstrap the build system
+- Link Soliloquy sources into the Fuchsia tree
+
+3. **Build using fx:**
+```bash
+source fuchsia/fuchsia/scripts/fx-env.sh
+fx set minimal.arm64 --board soliloquy
+fx build
+```
+
+### SDK Version Pinning
+
+To use a specific SDK version (default is "latest"):
+```bash
+export FUCHSIA_SDK_VERSION=20231115.2
+./tools/soliloquy/setup_sdk.sh
 ```
 
 ## Project Structure

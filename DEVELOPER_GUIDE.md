@@ -24,13 +24,41 @@ The system is layered as follows:
 
 ## 3. Development Environment
 
+### Supported Platforms
+- **Linux**: Fedora, RHEL, Debian, Ubuntu (full source build supported)
+- **macOS**: macOS 10.15+ with Homebrew (SDK-only setup supported; full source build requires remote Linux instance)
+
 ### Primary Build System
-- **OS**: Linux (Fedora/Debian/Ubuntu). macOS is supported for editing but building requires Linux (or a VM/Container).
 - **Build Tools**: `gn` (Generate Ninja) and `ninja`.
 - **Language Toolchains**:
     -   **Rust**: Stable, with `aarch64-unknown-fuchsia` target.
     -   **C++**: Clang/LLVM (provided by Fuchsia tree).
     -   **Python**: 3.8+ for build scripts.
+
+### macOS vs Linux Build Options
+
+**Option 1: Full Source Build (Linux Only)**
+- Requires a Linux machine or VM (Fedora/Debian/Ubuntu)
+- Run `tools/soliloquy/setup.sh` to bootstrap the full Fuchsia source tree
+- More flexibility for kernel and driver development
+- Longer initial setup (~1-2 hours for initial clone and bootstrap)
+
+**Option 2: SDK-Only Setup (Linux and macOS)**
+- Works on macOS or Linux
+- Run `tools/soliloquy/setup_sdk.sh` to download a pre-built Fuchsia SDK
+- Faster setup (~5-10 minutes for SDK download)
+- Suitable for application development and testing
+- Avoids Google Source rate limiting issues
+
+### macOS Remote Build Workflow
+
+If you are developing on macOS and need to build the full source:
+1. Set up a Fedora or Linux VM/container (locally or in the cloud)
+2. Clone this repository on the Linux instance
+3. Run `tools/soliloquy/setup.sh` on the Linux instance
+4. Sync code changes to the Linux instance (e.g., via git, rsync, or SSH)
+5. Run build commands on the Linux instance via SSH
+6. Copy build artifacts back to macOS for testing (if needed)
 
 ### Directory Structure
 ```
@@ -47,8 +75,40 @@ The system is layered as follows:
 ## 4. Workflows for AI Agents & Developers
 
 ### Setting Up
-1.  **Bootstrap**: Run `tools/soliloquy/setup.sh`. It handles dependencies and Fuchsia cloning.
-2.  **Environment**: Always `source scripts/fx-env.sh` before running `fx` commands.
+
+#### On Linux (Full Source Build)
+1. **Bootstrap**: Run `./tools/soliloquy/setup.sh`
+   - Installs dependencies (git, curl, unzip, build tools)
+   - Clones the Fuchsia repository
+   - Bootstraps the Fuchsia build system
+   - Links Soliloquy sources into the Fuchsia tree
+2. **Environment**: Always `source scripts/fx-env.sh` before running `fx` commands
+
+#### On macOS (SDK-Only Setup)
+1. **Prerequisites**: Install Homebrew if not already installed:
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+2. **SDK Setup**: Run `./tools/soliloquy/setup_sdk.sh`
+   - Detects macOS architecture (Intel x86_64 or Apple Silicon arm64)
+   - Downloads the appropriate Fuchsia SDK bundle (mac-amd64 or mac-arm64)
+   - Verifies curl and unzip are available
+   - Extracts the SDK to `./sdk`
+3. **Environment**: Source the environment helper script:
+   ```bash
+   source tools/soliloquy/env.sh
+   ```
+   This will automatically detect your OS and set:
+   - `FUCHSIA_DIR` to the SDK or Fuchsia source directory
+   - `CLANG_HOST_ARCH` to `mac-x64` (macOS) or `linux-x64` (Linux)
+   - Add SDK tools to your PATH
+
+#### SDK Version Pinning
+To use a specific SDK version instead of "latest":
+```bash
+export FUCHSIA_SDK_VERSION=20231115.2  # Example version
+./tools/soliloquy/setup_sdk.sh
+```
 
 ### Building
 Use the helper script:

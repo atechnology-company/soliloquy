@@ -1,14 +1,25 @@
 #!/bin/bash
 # setup.sh - Soliloquy OS Environment Setup
-# Target: Linux (Debian/Ubuntu based)
+# Supports Linux (Debian/Ubuntu/RHEL/Fedora) and macOS
 
 set -e
 
 echo "=== Soliloquy OS Setup ==="
 
+# Detect OS
+OS=$(uname -s)
+
 # 1. Install Prerequisites
 echo "[*] Installing dependencies..."
-if command -v dnf &> /dev/null; then
+if [ "$OS" = "Darwin" ]; then
+    echo "Detected macOS..."
+    if ! command -v brew &> /dev/null; then
+        echo "Error: Homebrew not found. Please install Homebrew first:"
+        echo "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+        exit 1
+    fi
+    brew install git curl unzip python@3 make
+elif command -v dnf &> /dev/null; then
     echo "Detected Fedora/RHEL..."
     sudo dnf install -y git curl unzip python3 python3-pip @development-tools gcc-c++ make
 elif command -v apt-get &> /dev/null; then
@@ -16,7 +27,7 @@ elif command -v apt-get &> /dev/null; then
     sudo apt-get update
     sudo apt-get install -y git curl unzip python3 python3-pip build-essential gcc g++ make
 else
-    echo "Error: Unsupported package manager. Please install dependencies manually."
+    echo "Error: Unsupported platform or package manager. Please install dependencies manually."
     exit 1
 fi
 
