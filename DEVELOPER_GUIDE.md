@@ -193,15 +193,42 @@ The AIC8800 driver (`drivers/wifi/aic8800/`) demonstrates HAL usage for:
 - SDIO transactions with `SdioHelper`
 - Firmware download to hardware
 
-## 5. Current Status & Roadmap
+## 5. Testing
+
+Soliloquy uses a comprehensive test framework with unit tests, integration tests, and code coverage.
+
+### Running Tests
+
+```bash
+# Run all Rust tests
+./tools/soliloquy/test.sh
+
+# Run with coverage
+./tools/soliloquy/test.sh --coverage
+
+# Run C++ tests (requires Fuchsia source)
+./tools/soliloquy/test.sh --fx-test
+```
+
+### Test Structure
+
+- **Unit Tests**: Co-located with source code
+- **Integration Tests**: In `src/shell/integration_tests.rs` and `src/shell/fidl_integration_tests.rs`
+- **C++ Tests**: In `drivers/*/tests/` directories
+- **Mock FIDL Servers**: In `test/support/` crate
+
+See [Testing Guide](docs/testing.md) for detailed documentation.
+
+## 6. Current Status & Roadmap
 - [x] **Board Config**: Basic GN files for Soliloquy board created.
 - [x] **Driver HAL**: Common hardware abstraction layer (`drivers/common/soliloquy_hal`) for MMIO, SDIO, firmware loading, and clock/reset control.
 - [x] **WiFi Driver**: AIC8800D80 driver refactored to use HAL.
 - [x] **GPIO Driver**: Generic GPIO driver using HAL as reference implementation.
+- [x] **Test Framework**: Unified test support crate with mock FIDL servers and coverage tools.
 - [ ] **Servo Integration**: Needs platform abstraction layer for Zircon.
 - [ ] **GPU Driver**: Mali-G57 integration needed (Magma).
 
-## 6. Key Constraints
+## 7. Key Constraints
 - **No POSIX**: Do not assume standard libc/POSIX availability in kernel/driver space.
 - **Async First**: Use Zircon's async loop and FIDL for IPC.
 - **Web Only**: No terminal apps, no X11/Wayland. The "display" is a full-screen browser.

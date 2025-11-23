@@ -346,7 +346,16 @@ dependencies = [
  "futures",
  "log",
  "rusty_v8",
+ "soliloquy_test_support",
  "tokio-test",
+]
+
+[[package]]
+name = "soliloquy_test_support"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "log",
 ]
 
 [[package]]

@@ -21,6 +21,7 @@ cargo:rerun-if-env-changed=V8_FROM_SOURCE
 download lockfile: "/home/engine/project/src/shell/target/x86_64-unknown-linux-gnu/debug/build/lib_download.fslock"
 static lib URL: https://github.com/denoland/rusty_v8/releases/download/v0.32.1/librusty_v8_release_x86_64-unknown-linux-gnu.a
 cargo:rustc-link-search=/home/engine/project/src/shell/target/x86_64-unknown-linux-gnu/debug/gn_out/obj
+Deleting old static lib /home/engine/project/src/shell/target/x86_64-unknown-linux-gnu/debug/gn_out/obj/librusty_v8.a
 Downloading https://github.com/denoland/rusty_v8/releases/download/v0.32.1/librusty_v8_release_x86_64-unknown-linux-gnu.a
 Downloading https://github.com/denoland/rusty_v8/releases/download/v0.32.1/librusty_v8_release_x86_64-unknown-linux-gnu.a... Done.
 cargo:rustc-link-lib=static=rusty_v8
