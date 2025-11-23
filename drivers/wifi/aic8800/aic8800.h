@@ -11,6 +11,9 @@
 #include <lib/ddk/device.h>
 #include <lib/ddk/driver.h>
 
+#include "../../common/soliloquy_hal/firmware.h"
+#include "../../common/soliloquy_hal/sdio.h"
+
 namespace aic8800 {
 
 class Aic8800;
@@ -38,19 +41,16 @@ public:
   zx_status_t WlanphyImplClearCountry();
   zx_status_t WlanphyImplGetCountry(wlanphy_country_t *out_country);
 
-  // SDIO Helpers
-  zx_status_t SdioRead(uint32_t addr, uint8_t *val);
-  zx_status_t SdioWrite(uint32_t addr, uint8_t val);
-  zx_status_t DownloadFirmware(const zx::vmo &fw_vmo, size_t size);
-
 private:
   zx_status_t InitHw();
 
   ddk::SdioProtocolClient sdio_;
+  soliloquy_hal::SdioHelper sdio_helper_;
 
   // Hardware specific constants
   static constexpr uint32_t kVendorId = 0x1234; // Placeholder
   static constexpr uint32_t kDeviceId = 0x5678; // Placeholder
+  static constexpr uint32_t kFirmwareBaseAddr = 0x00100000;
 };
 
 } // namespace aic8800

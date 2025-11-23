@@ -1,0 +1,30 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/fuchsia/rules.gni")
+
+source_set("soliloquy_hal") {
+  sources = [
+    "clock_reset.cc",
+    "clock_reset.h",
+    "firmware.cc",
+    "firmware.h",
+    "mmio.cc",
+    "mmio.h",
+    "sdio.cc",
+    "sdio.h",
+  ]
+  
+  public_deps = [
+    "//src/lib/ddk",
+    "//src/lib/ddktl",
+    "//sdk/banjo/fuchsia.hardware.sdio",
+    "//zircon/system/ulib/zx",
+    "//zircon/system/ulib/mmio",
+  ]
+  
+  deps = [
+    "//src/devices/lib/driver",
+  ]
+}

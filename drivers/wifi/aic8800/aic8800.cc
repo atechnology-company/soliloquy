@@ -15,7 +15,8 @@
 
 namespace aic8800 {
 
-Aic8800::Aic8800(zx_device_t *parent) : Aic8800Type(parent), sdio_(parent) {}
+Aic8800::Aic8800(zx_device_t *parent)
+    : Aic8800Type(parent), sdio_(parent), sdio_helper_(&sdio_) {}
 
 Aic8800::~Aic8800() {}
 
@@ -44,25 +45,24 @@ void Aic8800::DdkRelease() { delete this; }
 zx_status_t Aic8800::InitHw() {
   zxlogf(INFO, "aic8800: Initializing hardware...");
 
-  // TODO: Read Chip ID to determine which firmware to load (U01 vs U02)
-  // For now, assuming U01/Default
   const char *kFwName = "fmacfw_8800d80.bin";
 
   zx::vmo fw_vmo;
   size_t fw_size;
-  zx_status_t status = load_firmware(parent(), kFwName,
-                                     fw_vmo.reset_and_get_address(), &fw_size);
+  zx_status_t status = soliloquy_hal::FirmwareLoader::LoadFirmware(
+      parent(), kFwName, &fw_vmo, &fw_size);
   if (status != ZX_OK) {
-    zxlogf(ERROR, "aic8800: Failed to load firmware '%s': %s", kFwName,
+    return status;
+  }
+
+  status = sdio_helper_.DownloadFirmware(fw_vmo, fw_size, kFirmwareBaseAddr);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to download firmware: %s",
            zx_status_get_string(status));
     return status;
   }
 
-  zxlogf(INFO, "aic8800: Loaded firmware '%s' (%zu bytes)", kFwName, fw_size);
-
-  // TODO: Download firmware to chip via SDIO
-  // This requires the SDIO protocol to be set up (which is next)
-
+  zxlogf(INFO, "aic8800: Hardware initialization complete");
   return ZX_OK;
 }
 

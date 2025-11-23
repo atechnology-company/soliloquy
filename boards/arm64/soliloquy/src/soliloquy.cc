@@ -47,11 +47,16 @@ zx_status_t Soliloquy::Create(void *ctx, zx_device_t *parent) {
 zx_status_t Soliloquy::Start() {
   zx_status_t status;
 
+  // Initialize GPIO
+  status = GpioInit();
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "Soliloquy: GpioInit failed: %d", status);
+  }
+
   // Initialize Ethernet
   status = EthInit();
   if (status != ZX_OK) {
     zxlogf(ERROR, "Soliloquy: EthInit failed: %d", status);
-    // Continue even if Eth fails, other things might work
   }
 
   // Initialize SDIO
@@ -59,8 +64,6 @@ zx_status_t Soliloquy::Start() {
   if (status != ZX_OK) {
     zxlogf(ERROR, "Soliloquy: SdioInit failed: %d", status);
   }
-
-  // TODO: Initialize other devices (GPIO, etc.)
 
   return ZX_OK;
 }
