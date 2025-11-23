@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_input_event_handling() {
-        let embedder = ServoEmbedder::new().expect("Servo embedder should initialize");
+        let mut embedder = ServoEmbedder::new().expect("Servo embedder should initialize");
         
         // Test touch events
         let touch_event = InputEvent::Touch { x: 100.0, y: 200.0 };

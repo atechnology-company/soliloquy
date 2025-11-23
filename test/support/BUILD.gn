@@ -1,0 +1,24 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/rust/rustc_library.gni")
+
+rustc_library("soliloquy_test_support") {
+  name = "soliloquy_test_support"
+  edition = "2021"
+  
+  sources = [
+    "lib.rs",
+    "src/mocks/mod.rs",
+    "src/mocks/flatland.rs",
+    "src/mocks/touch_source.rs",
+    "src/mocks/view_provider.rs",
+    "src/assertions.rs",
+  ]
+  
+  deps = [
+    "//third_party/rust_crates:futures",
+    "//third_party/rust_crates:log",
+  ]
+}

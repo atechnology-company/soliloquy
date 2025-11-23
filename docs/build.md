@@ -298,6 +298,296 @@ All build scripts support `--help` for detailed usage information:
 3. **Remote caching:** Configure Bazel remote cache for team development
 4. **SSD storage:** Full Fuchsia builds benefit greatly from fast storage
 
+## Bazel Build System (Advanced)
+
+Soliloquy uses **Bazel with Bzlmod** for component-level development. This section covers the Bazel build workflow, module management, and troubleshooting.
+
+### Understanding MODULE.bazel
+
+The `MODULE.bazel` file defines external dependencies using Bazel's new module system (Bzlmod):
+
+```python
+# MODULE.bazel
+module(
+    name = "soliloquy",
+    version = "0.1.0",
+)
+
+# Rust rules for building Rust targets
+bazel_dep(name = "rules_rust", version = "0.56.0")
+
+# C++ rules for driver development
+bazel_dep(name = "rules_cc", version = "0.0.16")
+
+# TODO: Add Fuchsia SDK integration via registry or local_path_override
+```
+
+**Key concepts:**
+- `bazel_dep()`: Declares a dependency on a ruleset from the Bazel Central Registry
+- Version resolution handled automatically by Bzlmod (no manual `WORKSPACE` maintenance)
+- Module lock file (`MODULE.bazel.lock`) ensures reproducible builds
+
+### Bazel Sync and Dependency Resolution
+
+When you modify `MODULE.bazel` or first clone the repository:
+
+```bash
+# Fetch all external dependencies defined in MODULE.bazel
+bazel sync --configure
+
+# Or implicitly during first build
+bazel build //...
+```
+
+**What happens during sync:**
+1. Bazel reads `MODULE.bazel` and resolves the dependency graph
+2. Downloads rulesets from the Bazel Central Registry (or local overrides)
+3. Generates `MODULE.bazel.lock` with pinned versions and checksums
+4. Caches artifacts in `~/.cache/bazel/` (Linux/macOS)
+
+**MODULE.bazel.lock:**
+- Tracks exact resolved versions of all transitive dependencies
+- Should be committed to version control for reproducibility
+- Regenerate with `bazel sync` after MODULE.bazel changes
+
+### Building Specific Targets
+
+#### Build the Soliloquy Shell
+
+```bash
+# Build the main shell component
+bazel build //src/shell:soliloquy_shell
+
+# Build with optimizations
+bazel build //src/shell:soliloquy_shell -c opt
+
+# Build for specific architecture
+bazel build //src/shell:soliloquy_shell --cpu=arm64
+```
+
+#### Build All Targets
+
+```bash
+# Build everything in the repository
+bazel build //...
+
+# Build and run tests
+bazel test //...
+
+# Clean build (forces rebuild)
+bazel clean --expunge
+bazel build //src/shell:soliloquy_shell
+```
+
+#### Query Available Targets
+
+```bash
+# List all targets in the project
+bazel query //...
+
+# List targets in a specific package
+bazel query //src/shell:all
+
+# Show dependencies of a target
+bazel query 'deps(//src/shell:soliloquy_shell)'
+```
+
+### Using the Build Script
+
+For convenience, use the provided wrapper script:
+
+```bash
+# Build default targets
+./tools/soliloquy/build_bazel.sh
+
+# Build specific target
+./tools/soliloquy/build_bazel.sh --target //src/shell:soliloquy_shell
+
+# Pass additional Bazel flags
+./tools/soliloquy/build_bazel.sh --target //src/shell:soliloquy_shell -- -c opt
+
+# Run tests
+./tools/soliloquy/build_bazel.sh --target //src/shell:all --test
+```
+
+### Troubleshooting Bazel Builds
+
+#### 1. Missing SDK Repository
+
+**Error:**
+```
+ERROR: no such package '@fuchsia_sdk//': The repository '@fuchsia_sdk' could not be resolved
+```
+
+**Solution:**
+Ensure the Fuchsia SDK is set up and the repository rule is configured:
+```bash
+# Download SDK first
+./tools/soliloquy/setup_sdk.sh
+
+# Verify SDK directory exists
+ls -la sdk/
+
+# Rebuild
+bazel clean
+bazel build //src/shell:soliloquy_shell
+```
+
+If using local SDK override, ensure `MODULE.bazel` or `WORKSPACE.bazel` includes:
+```python
+# WORKSPACE.bazel
+local_repository(
+    name = "fuchsia_sdk",
+    path = "sdk",
+)
+```
+
+#### 2. Toolchain Download Issues
+
+**Error:**
+```
+ERROR: Failed to download https://github.com/bazelbuild/rules_rust/releases/...
+```
+
+**Solution:**
+Check network connectivity and retry with verbose output:
+```bash
+bazel sync --configure --verbose_failures
+
+# If behind a proxy, configure Bazel:
+bazel sync --configure \
+  --http_proxy=http://proxy.example.com:8080 \
+  --https_proxy=http://proxy.example.com:8080
+```
+
+**Alternative:** Use offline mode if artifacts are cached:
+```bash
+bazel build //src/shell:soliloquy_shell --offline
+```
+
+#### 3. Version Conflicts
+
+**Error:**
+```
+ERROR: Module extension rules_rust~0.56.0~rust_toolchains conflicts with...
+```
+
+**Solution:**
+Clear the module resolution cache and re-sync:
+```bash
+bazel shutdown
+rm -rf $(bazel info output_base)
+bazel sync --configure
+```
+
+#### 4. Stale MODULE.bazel.lock
+
+**Error:**
+```
+ERROR: Lock file is out of date. Run 'bazel mod deps --lockfile_mode=update'
+```
+
+**Solution:**
+Regenerate the lock file after MODULE.bazel changes:
+```bash
+bazel mod deps --lockfile_mode=update
+git add MODULE.bazel.lock
+```
+
+#### 5. Compilation Errors in Rust Code
+
+**Error:**
+```
+error[E0433]: failed to resolve: use of undeclared crate or module `fuchsia_async`
+```
+
+**Solution:**
+Ensure the Rust target's `BUILD.bazel` declares all dependencies:
+```python
+rust_library(
+    name = "soliloquy_shell",
+    srcs = ["src/lib.rs"],
+    deps = [
+        "//sdk/rust:fuchsia-async",
+        "//sdk/rust:fuchsia-component",
+    ],
+)
+```
+
+Verify Rust toolchain is correctly configured:
+```bash
+bazel query @rules_rust//rust:toolchains
+```
+
+#### 6. Missing Header Files (C++ Drivers)
+
+**Error:**
+```
+fatal error: 'lib/ddk/device.h' file not found
+```
+
+**Solution:**
+Add Fuchsia SDK includes to the `cc_library` or `cc_binary` target:
+```python
+cc_library(
+    name = "my_driver",
+    srcs = ["driver.cc"],
+    deps = [
+        "//sdk/c:ddk",
+        "//drivers/common/soliloquy_hal",
+    ],
+    includes = ["sdk/include"],
+)
+```
+
+### Bazel Performance Tips
+
+1. **Remote Caching (Team Development):**
+   ```bash
+   # Configure remote cache in .bazelrc
+   build --remote_cache=https://bazel-cache.example.com
+   ```
+
+2. **Local Disk Cache:**
+   ```bash
+   # Increase disk cache size (default 5GB)
+   bazel build //... --disk_cache=~/.cache/bazel-disk --disk_cache_size=20GB
+   ```
+
+3. **Parallel Jobs:**
+   ```bash
+   # Limit concurrent jobs (useful on low-memory systems)
+   bazel build //... --jobs=4
+   ```
+
+4. **Incremental Builds:**
+   Bazel automatically caches intermediate artifacts. For best performance:
+   - Don't use `--expunge` unless necessary
+   - Keep `bazel-*` symlinks intact (don't `.gitignore` them)
+   - Use `bazel build` (not `bazel run`) for repeated builds
+
+### Bazel vs Other Build Methods
+
+| Feature | Bazel | SDK Build (`build_sdk.sh`) | Full Build (`build.sh`) |
+|---------|-------|---------------------------|-------------------------|
+| **Speed** | Fast incremental | Moderate | Slow (full system) |
+| **Scope** | Components only | Components + SDK libs | Entire Fuchsia OS |
+| **Cache** | Excellent | Good | Limited |
+| **Cross-platform** | Yes (Linux/macOS) | Yes | Linux only |
+| **Use case** | Development iteration | SDK testing | System integration |
+
+**When to use Bazel:**
+- Iterating on Rust/C++ components
+- Unit testing individual modules
+- CI/CD pipelines for component validation
+- Working without full Fuchsia source tree
+
+**When to use full build:**
+- Kernel modifications
+- Driver integration testing
+- Board-level configuration changes
+- Creating flashable system images
+
 ## Integration with IDEs
 
 - **VS Code:** Use Bazel extension for `build_bazel.sh`

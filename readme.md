@@ -264,9 +264,13 @@ This is an experimental project. Contributions welcome!
 ## Documentation
 
 - [Build System Guide](docs/build.md)
-- [Component Manifest Guide](docs/component_manifest.md) ✅ **New**
+- [Component Manifest Guide](docs/component_manifest.md)
 - [Servo Integration](docs/servo_integration.md)
 - [Developer Guide](DEVELOPER_GUIDE.md)
+- [Testing Guide](docs/testing.md)
+- [Servo Integration](docs/servo_integration.md)
+- [Implementation Plan](docs/implementation_plan.md)
+- [Development Walkthrough](docs/walkthrough.md)
 
 ## License
 
