@@ -1,34 +1,73 @@
 #!/bin/bash
 # build.sh - Build Soliloquy OS
+# Usage: ./tools/soliloquy/build.sh [--product PRODUCT] [--board BOARD] [--extra-args ARGS]
 
 set -e
 
-PROJECT_ROOT=$(pwd)
-# Note: Due to previous clone behavior, the checkout is nested in fuchsia/fuchsia
-FUCHSIA_DIR="$PROJECT_ROOT/fuchsia/fuchsia"
+# Source shared helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/build_common.sh"
 
-if [ ! -d "$FUCHSIA_DIR" ]; then
-    echo "Error: Fuchsia directory not found at $FUCHSIA_DIR"
-    exit 1
-fi
+# Default values
+PRODUCT="$DEFAULT_PRODUCT"
+BOARD="$BOARD_PATH"
+EXTRA_ARGS=""
 
-# Source fx-env.sh to get fx tool
-source "$FUCHSIA_DIR/scripts/fx-env.sh"
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --product)
+            PRODUCT="$2"
+            shift 2
+            ;;
+        --board)
+            BOARD="$2"
+            shift 2
+            ;;
+        --extra-args)
+            EXTRA_ARGS="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--product PRODUCT] [--board BOARD] [--extra-args ARGS]"
+            echo ""
+            echo "Build Soliloquy OS with configurable product and board."
+            echo ""
+            echo "Options:"
+            echo "  --product PRODUCT     Product to build (default: $DEFAULT_PRODUCT)"
+            echo "  --board BOARD         Board configuration (default: $BOARD_PATH)"
+            echo "  --extra-args ARGS     Additional arguments to pass to fx set"
+            echo "  --help, -h            Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0                                    # Build with defaults"
+            echo "  $0 --product workbench_eng.arm64     # Build different product"
+            echo "  $0 --board boards/arm64/qemu          # Build for different board"
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
 
+log_info "=== Soliloquy OS Build ==="
+log_info "Product: $PRODUCT"
+log_info "Board: $BOARD"
+
+# Check if fx is available and bootstrapped
+check_fx_bootstrapped
+
+# Idempotent configuration
+fx_set_idempotent "$PRODUCT" "$BOARD" "$EXTRA_ARGS"
+
+# Build
+log_info "Starting build..."
 cd "$FUCHSIA_DIR"
-
-echo "=== Configuring Build ==="
-# Configure for minimal ARM64 build with Soliloquy board
-# Note: We will update this to point to our specific board definition once fully implemented
-fx set minimal.arm64 \
-  --with-base //src/connectivity/network \
-  --with-base //src/graphics/display \
-  --with //vendor/soliloquy/src/shell:soliloquy_shell \
-  --with //vendor/soliloquy/drivers/aic8800:aic8800 \
-  --args='exclude_starnix=true' \
-  --args='exclude_devtools=true'
-
-echo "=== Starting Build ==="
 fx build
 
-echo "=== Build Complete ==="
+# Emit artifact summary
+OUTPUT_DIR=$(get_output_dir "fuchsia")
+emit_artifact_summary "Fuchsia Full Source Build" "$OUTPUT_DIR"

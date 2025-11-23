@@ -56,10 +56,20 @@ cd soliloquy
 ```
 
 3. **Build:**
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-bazel build //src/shell:soliloquy_shell_simple
-```
+   ```bash
+   # For macOS users with Linux server:
+   ./tools/soliloquy/ssh_build.sh user@linux-server
+   
+   # For Linux users (full build):
+   ./tools/soliloquy/setup.sh  # One-time setup
+   ./tools/soliloquy/build.sh
+   
+   # For cross-platform component development:
+   ./tools/soliloquy/setup_sdk.sh
+   ./tools/soliloquy/build_sdk.sh
+   ```
+
+   📖 **See [Build System Guide](docs/build.md)** for detailed build options and platform-specific instructions.
 
 4. **Run test:**
 ```bash
@@ -94,10 +104,16 @@ Uses Bazel with Bzlmod (MODULE.bazel):
 
 ### Scripts
 
+- `tools/soliloquy/setup.sh` - Bootstrap full Fuchsia checkout (Linux)
 - `tools/soliloquy/setup_sdk.sh` - Download and configure SDK
-- `tools/soliloquy/build_bazel.sh` - Build with Bazel
+- `tools/soliloquy/build.sh` - Full Fuchsia build with Soliloquy (Linux)
+- `tools/soliloquy/ssh_build.sh` - Remote build from macOS to Linux
+- `tools/soliloquy/build_sdk.sh` - SDK-based cross-platform build
+- `tools/soliloquy/build_bazel.sh` - Bazel component build
 - `tools/soliloquy/flash.sh` - Flash to device (fastboot)
 - `tools/soliloquy/debug.sh` - Serial console debugging
+
+All build scripts support `--help` for detailed usage information.
 
 ## Architecture
 
