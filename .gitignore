@@ -23,3 +23,8 @@ vendor/servo/
 tmp/
 *.tmp
 *.log
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk

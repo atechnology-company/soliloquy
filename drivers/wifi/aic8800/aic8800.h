@@ -43,14 +43,59 @@ public:
 
 private:
   zx_status_t InitHw();
+  zx_status_t ReadChipId(uint32_t *out_chip_id);
+  zx_status_t WaitForFirmwareReady();
+  zx_status_t ResetChip();
 
   ddk::SdioProtocolClient sdio_;
   soliloquy_hal::SdioHelper sdio_helper_;
+  
+  uint32_t chip_id_ = 0;
+  bool initialized_ = false;
 
-  // Hardware specific constants
-  static constexpr uint32_t kVendorId = 0x1234; // Placeholder
-  static constexpr uint32_t kDeviceId = 0x5678; // Placeholder
+  static constexpr uint32_t kVendorId = 0xA5C8;
+  static constexpr uint32_t kDeviceId = 0x8800;
+  
+  static constexpr uint32_t kRegChipId = 0x00000000;
+  static constexpr uint32_t kRegChipRev = 0x00000004;
+  static constexpr uint32_t kRegFwStatus = 0x00000008;
+  static constexpr uint32_t kRegHostCtrl = 0x0000000C;
+  static constexpr uint32_t kRegIntStatus = 0x00000010;
+  static constexpr uint32_t kRegIntMask = 0x00000014;
+  static constexpr uint32_t kRegTxReady = 0x00000018;
+  static constexpr uint32_t kRegRxReady = 0x0000001C;
+  
+  static constexpr uint32_t kRegSdioCtrl = 0x00000100;
+  static constexpr uint32_t kRegBlockSize = 0x00000110;
+  static constexpr uint32_t kRegBlockCount = 0x00000114;
+  
+  static constexpr uint32_t kRegFwDownloadAddr = 0x00100000;
+  static constexpr uint32_t kRegFwDownloadSize = 0x00100004;
+  static constexpr uint32_t kRegFwDownloadCtrl = 0x00100008;
+  
+  static constexpr uint32_t kIntFwReady = 1 << 0;
+  static constexpr uint32_t kIntTxDone = 1 << 1;
+  static constexpr uint32_t kIntRxReady = 1 << 2;
+  static constexpr uint32_t kIntError = 1 << 31;
+  
+  static constexpr uint32_t kHostCtrlReset = 1 << 0;
+  static constexpr uint32_t kHostCtrlEnable = 1 << 1;
+  static constexpr uint32_t kHostCtrlSleep = 1 << 2;
+  
+  static constexpr uint32_t kFwStatusIdle = 0;
+  static constexpr uint32_t kFwStatusDownloading = 1;
+  static constexpr uint32_t kFwStatusReady = 2;
+  static constexpr uint32_t kFwStatusError = 0xFF;
+  
+  static constexpr uint32_t kChipIdAic8800D = 0x88000000;
+  static constexpr uint32_t kChipIdAic8800Dc = 0x88000001;
+  static constexpr uint32_t kChipIdAic8800Dw = 0x88000002;
+  
   static constexpr uint32_t kFirmwareBaseAddr = 0x00100000;
+  static constexpr size_t kFirmwareMaxSize = 512 * 1024;
+  
+  static constexpr size_t kBlockSize = 512;
+  static constexpr int kFwReadyTimeoutMs = 5000;
 };
 
 } // namespace aic8800
