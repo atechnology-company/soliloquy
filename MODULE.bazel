@@ -1,0 +1,14 @@
+# Soliloquy OS - Bazel Module
+
+module(
+    name = "soliloquy",
+    version = "0.1.0",
+)
+
+# Rust rules
+bazel_dep(name = "rules_rust", version = "0.56.0")
+
+# C++ rules
+bazel_dep(name = "rules_cc", version = "0.0.16")
+
+# TODO: Add Fuchsia SDK integration

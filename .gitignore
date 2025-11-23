@@ -1,0 +1,25 @@
+# Ignore build outputs
+bazel-*
+out/
+.bazel/
+
+# Ignore large downloads
+sdk/
+fuchsia/
+vendor/servo/
+
+# Ignore OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.iml
+
+# Ignore temporary files
+tmp/
+*.tmp
+*.log

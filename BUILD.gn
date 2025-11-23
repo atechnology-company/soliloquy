@@ -1,0 +1,12 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Root build file for Soliloquy OS
+
+group("default") {
+  deps = [
+    "//src/shell:soliloquy_shell",
+    # "//drivers/wifi/aic8800:aic8800",  # Enable after SDK setup
+  ]
+}

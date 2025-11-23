@@ -4,7 +4,36 @@
 
 import("//build/board.gni")
 
+import("//build/board.gni")
+import("//build/driver_package.gni")
+
 board_config("soliloquy") {
   # Board configuration for Radxa Cubie A5E (Allwinner A527)
   # This target is used by `fx set` to configure the build for this board.
+}
+
+driver_module("soliloquy-driver") {
+  output_name = "soliloquy"
+  sources = [
+    "src/soliloquy-ethernet.cc",
+    "src/soliloquy-sdio.cc",
+    "src/soliloquy.cc",
+  ]
+  deps = [
+    "//src/devices/lib/driver",
+    "//src/lib/ddk",
+    "//src/lib/ddktl",
+    "//zircon/system/ulib/fbl",
+    "//zircon/system/ulib/zx",
+  ]
+}
+
+driver_package("soliloquy-package") {
+  package_name = "soliloquy"
+  deps = [ ":soliloquy-driver" ]
+  drivers = [
+    {
+      name = "soliloquy.so"
+    },
+  ]
 }

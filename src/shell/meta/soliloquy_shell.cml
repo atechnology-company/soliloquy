@@ -1,0 +1,35 @@
+{
+    include: [ "syslog/client.shard.cml" ],
+    program: {
+        runner: "elf",
+        binary: "bin/soliloquy_shell",
+    },
+    capabilities: [
+        { protocol: [ "fuchsia.ui.app.ViewProvider" ] },
+    ],
+    use: [
+        {
+            protocol: [
+                "fuchsia.logger.LogSink",
+                "fuchsia.ui.composition.Flatland",
+                "fuchsia.ui.composition.Allocator",
+                "fuchsia.ui.views.ViewRefInstalled",
+                "fuchsia.ui.pointer.TouchSource",
+                "fuchsia.ui.input3.Keyboard",
+                "fuchsia.vulkan.loader.Loader",
+                "fuchsia.net.name.Lookup",
+                "fuchsia.posix.socket.Provider",
+            ],
+        },
+        {
+            storage: "data",
+            path: "/data",
+        },
+    ],
+    expose: [
+        {
+            protocol: [ "fuchsia.ui.app.ViewProvider" ],
+            from: "self",
+        },
+    ],
+}

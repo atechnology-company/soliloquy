@@ -7,10 +7,24 @@
 
 namespace aic8800 {
 
-// This file will contain the SDIO specific implementation details.
-// It will likely interface with the Zircon SDIO protocol.
+zx_status_t Aic8800::SdioRead(uint32_t addr, uint8_t *val) {
+  return sdio_.DoRwByte(false, addr, 0, val);
+}
 
-// TODO: Add SDIO protocol client member to Aic8800 class
-// TODO: Implement SDIO read/write helper functions
+zx_status_t Aic8800::SdioWrite(uint32_t addr, uint8_t val) {
+  return sdio_.DoRwByte(true, addr, val, nullptr);
+}
+
+zx_status_t Aic8800::DownloadFirmware(const zx::vmo &fw_vmo, size_t size) {
+  // TODO: Implement firmware download logic using SDIO block writes
+  // This will involve mapping the VMO and writing it to the chip in blocks
+  // For now, just log that we would download it
+  zxlogf(INFO, "aic8800: Downloading firmware (size: %zu)", size);
+
+  // Placeholder for actual download loop
+  // sdio_.DoRwTxn(...)
+
+  return ZX_OK;
+}
 
 } // namespace aic8800

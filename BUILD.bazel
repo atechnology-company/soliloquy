@@ -1,0 +1,9 @@
+# Root BUILD file for Soliloquy OS
+
+package(default_visibility = ["//visibility:public"])
+
+# Convenience target to build everything
+alias(
+    name = "all",
+    actual = "//src/shell:soliloquy_shell",
+)

@@ -1,0 +1,36 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/components.gni")
+import("//build/rust/rustc_binary.gni")
+
+rustc_binary("bin") {
+  name = "soliloquy_shell"
+  edition = "2021"
+  sources = [
+    "main.rs",
+    "zircon_window.rs",
+    "servo_embedder.rs",
+  ]
+  deps = [
+    "//src/lib/fuchsia-async",
+    "//src/lib/fuchsia-component",
+    "//src/lib/syslog/rust:syslog",
+    "//third_party/rust_crates:futures",
+    "//third_party/rust_crates:log",
+    "//sdk/fidl/fuchsia.ui.composition:fuchsia.ui.composition_rust",
+    "//sdk/fidl/fuchsia.ui.views:fuchsia.ui.views_rust",
+    "//vendor/servo", 
+  ]
+}
+
+fuchsia_component("component") {
+  component_name = "soliloquy_shell"
+  manifest = "meta/soliloquy_shell.cml"
+  deps = [ ":bin" ]
+}
+
+fuchsia_package("soliloquy_shell") {
+  deps = [ ":component" ]
+}

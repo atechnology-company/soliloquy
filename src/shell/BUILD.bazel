@@ -1,0 +1,33 @@
+# Soliloquy Shell - Bazel Build
+
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+# SDK integration test (C++)
+cc_binary(
+    name = "sdk_test",
+    srcs = ["sdk_test.cc"],
+    copts = ["-I$(BINDIR)/external/soliloquy/sdk/arch/arm64/sysroot/include"],
+    deps = [
+        "//sdk:zircon_lib",
+    ],
+)
+
+# Simplified shell for testing build system
+rust_binary(
+    name = "soliloquy_shell_simple",
+    srcs = ["main_simple.rs"],
+    edition = "2021",
+)
+
+# Full shell with Fuchsia dependencies (WIP)
+rust_binary(
+    name = "soliloquy_shell",
+    srcs = [
+        "main.rs",
+        "zircon_window.rs",
+        "servo_embedder.rs",
+    ],
+    edition = "2021",
+    # TODO: Add Fuchsia SDK dependencies
+)

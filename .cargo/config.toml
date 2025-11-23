@@ -1,0 +1,9 @@
+[target.aarch64-unknown-fuchsia]
+rustflags = [
+    "-C", "link-arg=--target=aarch64-unknown-fuchsia",
+    "-C", "link-arg=-L", 
+    "-C", "link-arg=${FUCHSIA_DIR}/prebuilt/third_party/clang/linux-x64/lib/aarch64-unknown-fuchsia/lib",
+]
+
+[build]
+target = "aarch64-unknown-fuchsia"

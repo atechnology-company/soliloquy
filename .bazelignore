@@ -1,0 +1,5 @@
+# Directories to ignore during Bazel build
+fuchsia
+out
+.git
+vendor/servo

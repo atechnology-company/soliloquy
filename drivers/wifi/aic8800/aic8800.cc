@@ -3,12 +3,19 @@
 // found in the LICENSE file.
 
 #include "aic8800.h"
+
 #include <lib/ddk/debug.h>
+#include <lib/ddk/device.h>
+#include <lib/ddk/driver.h>
+#include <lib/ddk/platform-defs.h>
 #include <zircon/status.h>
+#include <zircon/types.h>
+
+#include <memory>
 
 namespace aic8800 {
 
-Aic8800::Aic8800(zx_device_t *parent) : Aic8800Type(parent) {}
+Aic8800::Aic8800(zx_device_t *parent) : Aic8800Type(parent), sdio_(parent) {}
 
 Aic8800::~Aic8800() {}
 
@@ -36,7 +43,26 @@ void Aic8800::DdkRelease() { delete this; }
 
 zx_status_t Aic8800::InitHw() {
   zxlogf(INFO, "aic8800: Initializing hardware...");
-  // TODO: Implement hardware initialization logic (reset, firmware load, etc.)
+
+  // TODO: Read Chip ID to determine which firmware to load (U01 vs U02)
+  // For now, assuming U01/Default
+  const char *kFwName = "fmacfw_8800d80.bin";
+
+  zx::vmo fw_vmo;
+  size_t fw_size;
+  zx_status_t status = load_firmware(parent(), kFwName,
+                                     fw_vmo.reset_and_get_address(), &fw_size);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to load firmware '%s': %s", kFwName,
+           zx_status_get_string(status));
+    return status;
+  }
+
+  zxlogf(INFO, "aic8800: Loaded firmware '%s' (%zu bytes)", kFwName, fw_size);
+
+  // TODO: Download firmware to chip via SDIO
+  // This requires the SDIO protocol to be set up (which is next)
+
   return ZX_OK;
 }
 

@@ -18,8 +18,8 @@ driver_module("aic8800_driver") {
     "//src/lib/ddktl",
     "//zircon/system/ulib/fbl",
     "//zircon/system/ulib/zx",
-    # Add SDIO protocol dependency here
-    # "//sdk/banjo/ddk.protocol.sdio",
+    "//sdk/banjo/fuchsia.hardware.sdio",
+    "//sdk/banjo/fuchsia.hardware.wlanphyimpl",
   ]
 }
 
