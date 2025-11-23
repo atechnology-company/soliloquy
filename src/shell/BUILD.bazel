@@ -31,7 +31,9 @@ rust_binary(
     ],
     edition = "2021",
     deps = [
-        # TODO: Add Fuchsia SDK dependencies
+        "//gen/fidl/fuchsia_ui_composition",
+        "//gen/fidl/fuchsia_ui_views",
+        "//gen/fidl/fuchsia_input",
         # TODO: Add rusty_v8 dependency via cargo
         # TODO: Add Servo dependency
     ],

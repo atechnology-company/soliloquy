@@ -21,8 +21,9 @@ rustc_binary("bin") {
     "//third_party/rust_crates:futures",
     "//third_party/rust_crates:log",
     "//third_party/rust_crates:rusty_v8",
-    "//sdk/fidl/fuchsia.ui.composition:fuchsia.ui.composition_rust",
-    "//sdk/fidl/fuchsia.ui.views:fuchsia.ui.views_rust",
+    "//gen/fidl/fuchsia_ui_composition",
+    "//gen/fidl/fuchsia_ui_views",
+    "//gen/fidl/fuchsia_input",
     "//vendor/servo", 
   ]
 }
