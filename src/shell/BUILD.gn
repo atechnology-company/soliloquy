@@ -34,5 +34,6 @@ fuchsia_component("component") {
 }
 
 fuchsia_package("soliloquy_shell") {
+  package_name = "soliloquy_shell"
   deps = [ ":component" ]
 }
