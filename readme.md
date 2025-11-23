@@ -262,6 +262,8 @@ This is an experimental project. Contributions welcome!
 
 ## Documentation
 
+- **[Build System Guide](docs/build.md)** - Complete build methods, Bazel workflow, troubleshooting
+- **[Driver Porting Guide](docs/driver_porting.md)** - Port Linux drivers to Soliloquy HAL
 - [Implementation Plan](docs/implementation_plan.md)
 - [Servo Integration](docs/servo_integration.md) ✅ **New**
 - [Development Walkthrough](docs/walkthrough.md)

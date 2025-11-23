@@ -14,60 +14,125 @@ use std::collections::HashMap;
 
 use crate::v8_runtime::V8Runtime;
 
-/// Servo embedder context
+/// Main embedder context that bridges Servo browser engine with Zircon/Fuchsia.
+///
+/// `ServoEmbedder` manages the lifecycle of a web browser instance running on Soliloquy OS.
+/// It coordinates between:
+/// - Flatland compositor for GPU-accelerated graphics presentation
+/// - V8 JavaScript runtime for script execution
+/// - Servo's rendering engine for web content
+/// - Zircon input event system
+///
+/// The embedder follows a state machine pattern (see [`EmbedderState`]) to ensure proper
+/// initialization order and safe resource management.
 pub struct ServoEmbedder {
-    /// Flatland session for graphics
+    /// Flatland session for GPU-accelerated graphics compositing.
+    /// Currently a placeholder; will connect to `fuchsia.ui.composition.Flatland` FIDL service.
     flatland_session: Option<Arc<Mutex<FlatlandSession>>>,
-    /// View reference for the window
+    /// View reference tokens for window management in Scenic scene graph.
     view_ref: Option<ViewRef>,
-    /// Event queue for input handling
+    /// Thread-safe queue for buffering input events before dispatch to Servo.
     event_queue: Arc<Mutex<Vec<InputEvent>>>,
-    /// V8 runtime for JavaScript execution
+    /// V8 JavaScript runtime instance for executing web page scripts.
+    /// Initialized early and used throughout the embedder lifetime.
     v8_runtime: Option<V8Runtime>,
-    /// Servo webview instance
+    /// Servo webview handle (placeholder for actual Servo browser instance).
     webview: Option<Arc<Mutex<ServoWebview>>>,
-    /// Current URL loaded
+    /// Currently loaded URL, used for reload and navigation state.
     current_url: Option<String>,
-    /// Embedder state
+    /// Current state in the embedder lifecycle (see state machine documentation).
     state: EmbedderState,
 }
 
-/// Embedder state machine
+/// State machine for embedder lifecycle management.
+///
+/// The embedder transitions through these states in order:
+/// 1. `Uninitialized` → `Initializing`: Begin resource allocation
+/// 2. `Initializing` → `Ready`: All subsystems initialized, ready to load content
+/// 3. `Ready` → `Loading`: URL load initiated
+/// 4. `Loading` → `Running`: Content loaded and rendering active
+///
+/// Any state can transition to `Error(String)` on failure.
+/// Only `Ready` and `Running` states accept new URL loads.
 #[derive(Debug, Clone, PartialEq)]
 pub enum EmbedderState {
+    /// Initial state before any initialization.
     Uninitialized,
+    /// Actively initializing V8, Flatland, and other subsystems.
     Initializing,
+    /// All systems ready, waiting for content load.
     Ready,
+    /// URL load in progress, page not yet rendered.
     Loading,
+    /// Page loaded and actively rendering frames.
     Running,
+    /// Unrecoverable error occurred; contains error description.
     Error(String),
 }
 
-/// Flatland session wrapper
+/// Placeholder for Fuchsia Flatland compositor session.
+///
+/// In production, this will wrap `fuchsia.ui.composition.FlatlandProxy` for:
+/// - Creating scene graph transforms and content nodes
+/// - Submitting frame buffers for GPU composition
+/// - Managing image/buffer lifetimes
+///
+/// Currently tracks session metadata for development/testing.
 pub struct FlatlandSession {
-    // TODO: Add actual Flatland client
+    /// Session identifier for debugging and logging.
     pub session_id: u32,
+    /// Viewport width in physical pixels.
     pub width: u32,
+    /// Viewport height in physical pixels.
     pub height: u32,
 }
 
-/// View reference for window management
+/// View reference tokens for Scenic view tree integration.
+///
+/// Contains kernel object IDs (koids) for:
+/// - `ViewRef`: Read-only reference for event routing and focus
+/// - `ViewRefControl`: Write capability for view lifecycle management
+///
+/// These will be created via `fuchsia.ui.views` FIDL APIs.
 #[derive(Debug, Clone)]
 pub struct ViewRef {
+    /// Kernel object ID for the ViewRef eventpair.
     pub view_ref_koid: u64,
+    /// Kernel object ID for the ViewRefControl eventpair.
     pub view_ref_control_koid: u64,
 }
 
-/// Servo webview wrapper
+/// Placeholder for Servo browser webview instance.
+///
+/// Represents a single browser tab/window. In production, this will interface with
+/// Servo's embedding API to control navigation, access DOM, and manage render output.
 pub struct ServoWebview {
+    /// Currently loaded URL.
     pub url: Option<String>,
+    /// Page title (from `<title>` element or navigation metadata).
     pub title: Option<String>,
+    /// Whether a navigation/load operation is in progress.
     pub is_loading: bool,
-    // TODO: Add actual Servo webview handle
 }
 
 impl ServoEmbedder {
-    /// Create a new Servo embedder
+    /// Creates and initializes a new Servo embedder instance.
+    ///
+    /// Performs the following initialization steps:
+    /// 1. Creates V8 runtime and executes a test script to verify functionality
+    /// 2. Initializes Flatland graphics session (currently placeholder)
+    /// 3. Creates view reference tokens for window management
+    /// 4. Transitions state from `Uninitialized` → `Initializing` → `Ready`
+    ///
+    /// # Returns
+    /// - `Ok(ServoEmbedder)`: Fully initialized embedder ready to load URLs
+    /// - `Err(String)`: V8 initialization failure (critical error)
+    ///
+    /// # Examples
+    /// ```no_run
+    /// let embedder = ServoEmbedder::new()?;
+    /// embedder.load_url("https://example.com")?;
+    /// ```
     pub fn new() -> Result<Self, String> {
         info!("Initializing Servo embedder");
         
@@ -127,9 +192,12 @@ impl ServoEmbedder {
         Ok(embedder)
     }
     
-    /// Initialize Flatland graphics session
+    /// Initializes a Flatland compositor session for graphics output.
+    ///
+    /// **Placeholder Implementation:** Currently returns a mock session.
+    /// Production version will connect to `fuchsia.ui.composition.Flatland` FIDL protocol
+    /// and create a scene graph with image pipes for Servo's render output.
     fn init_flatland(&self) -> Result<FlatlandSession, String> {
-        // TODO: Implement actual Flatland client initialization
         debug!("Initializing Flatland session (placeholder)");
         
         Ok(FlatlandSession {
@@ -139,7 +207,29 @@ impl ServoEmbedder {
         })
     }
     
-    /// Initialize Servo with the given URL
+    /// Loads a URL into the webview and initializes the page.
+    ///
+    /// This method:
+    /// 1. Validates embedder state (must be `Ready` or `Running`)
+    /// 2. Transitions to `Loading` state
+    /// 3. Creates a Servo webview instance (currently placeholder)
+    /// 4. Executes JavaScript initialization code via V8 to simulate page load
+    /// 5. Transitions to `Running` state on success
+    ///
+    /// **Placeholder:** Currently uses V8 to simulate page load. Production version
+    /// will invoke Servo's navigation API: `servo::webview::load(url)`.
+    ///
+    /// # Arguments
+    /// * `url` - The URL to load (e.g., "https://example.com")
+    ///
+    /// # Returns
+    /// - `Ok(())`: URL loaded successfully, page is rendering
+    /// - `Err(String)`: Invalid state or load failure
+    ///
+    /// # Examples
+    /// ```no_run
+    /// embedder.load_url("https://soliloquy.dev")?;
+    /// ```
     pub fn load_url(&mut self, url: &str) -> Result<(), String> {
         if self.state != EmbedderState::Ready && self.state != EmbedderState::Running {
             return Err(format!("Embedder not ready for loading URLs. Current state: {:?}", self.state));
@@ -199,7 +289,25 @@ impl ServoEmbedder {
         Ok(())
     }
     
-    /// Handle input events
+    /// Processes and dispatches input events to the webview.
+    ///
+    /// Input events are:
+    /// 1. Queued to the internal event buffer for tracking
+    /// 2. Converted to JavaScript handlers (current implementation)
+    /// 3. Dispatched to V8 runtime for web page interaction
+    ///
+    /// **Placeholder:** Production version will convert Fuchsia input events
+    /// (from `fuchsia.ui.input3` or `fuchsia.ui.pointer`) to Servo's event format
+    /// and call `servo::input::handle_event(event)`.
+    ///
+    /// # Arguments
+    /// * `event` - Touch or keyboard input event to process
+    ///
+    /// # Examples
+    /// ```no_run
+    /// embedder.handle_input(InputEvent::Touch { x: 100.0, y: 200.0 });
+    /// embedder.handle_input(InputEvent::Key { code: 13 }); // Enter key
+    /// ```
     pub fn handle_input(&mut self, event: InputEvent) {
         debug!("Handling input event: {:?}", event);
         
@@ -248,7 +356,20 @@ impl ServoEmbedder {
         }
     }
     
-    /// Present the current frame
+    /// Submits the current frame to the Flatland compositor for display.
+    ///
+    /// This method is called on each frame of the render loop and:
+    /// 1. Retrieves the current Flatland session
+    /// 2. Submits buffered scene graph updates and image content
+    /// 3. Executes optional JavaScript frame callbacks via V8
+    ///
+    /// **Placeholder:** Production version will call `flatland::present(session)`
+    /// to submit Servo's rendered frame buffer to the Fuchsia compositor. This involves
+    /// creating Flatland content nodes linked to Vulkan/Magma image pipes.
+    ///
+    /// # Returns
+    /// - `Ok(())`: Frame submitted successfully
+    /// - `Err(String)`: Presentation failure (rare; logged as warning)
     pub fn present(&mut self) -> Result<(), String> {
         debug!("Presenting frame");
         
@@ -278,17 +399,31 @@ impl ServoEmbedder {
         Ok(())
     }
     
-    /// Get current embedder state
+    /// Returns the current embedder lifecycle state.
+    ///
+    /// Use this to check if the embedder is ready for operations like URL loading.
     pub fn get_state(&self) -> &EmbedderState {
         &self.state
     }
     
-    /// Get current URL
+    /// Returns the currently loaded URL, if any.
+    ///
+    /// # Returns
+    /// - `Some(&String)`: URL that was passed to `load_url()`
+    /// - `None`: No URL has been loaded yet
     pub fn get_current_url(&self) -> Option<&String> {
         self.current_url.as_ref()
     }
     
-    /// Get webview information
+    /// Retrieves metadata about the current webview state.
+    ///
+    /// # Returns
+    /// A map containing:
+    /// - `"url"`: Currently loaded URL
+    /// - `"title"`: Page title from `<title>` element
+    /// - `"loading"`: Whether a navigation is in progress ("true"/"false")
+    ///
+    /// Returns `None` if no webview has been created.
     pub fn get_webview_info(&self) -> Option<HashMap<String, String>> {
         if let Some(ref webview_arc) = self.webview {
             if let Ok(webview) = webview_arc.lock() {
@@ -306,7 +441,24 @@ impl ServoEmbedder {
         None
     }
     
-    /// Execute JavaScript in the current page context
+    /// Executes arbitrary JavaScript code in the page context.
+    ///
+    /// Provides direct access to the V8 runtime for executing scripts.
+    /// In production, this would execute within Servo's JavaScript context
+    /// with access to the DOM and web APIs.
+    ///
+    /// # Arguments
+    /// * `script` - JavaScript source code to execute
+    ///
+    /// # Returns
+    /// - `Ok(String)`: String representation of the script's return value
+    /// - `Err(String)`: V8 runtime not initialized or script execution error
+    ///
+    /// # Examples
+    /// ```no_run
+    /// let title = embedder.execute_js("document.title")?;
+    /// embedder.execute_js("console.log('Hello from Soliloquy')")?;
+    /// ```
     pub fn execute_js(&mut self, script: &str) -> Result<String, String> {
         if let Some(ref mut runtime) = self.v8_runtime {
             runtime.execute_script(script)
@@ -316,9 +468,22 @@ impl ServoEmbedder {
     }
 }
 
-/// Input event types
+/// Input event types for user interaction.
+///
+/// Represents simplified input events that will be mapped from Fuchsia's
+/// input protocols (`fuchsia.ui.input3` for keyboard, `fuchsia.ui.pointer` for touch/mouse).
 #[derive(Debug, Clone)]
 pub enum InputEvent {
-    Touch { x: f32, y: f32 },
-    Key { code: u32 },
+    /// Touch or mouse pointer event with viewport coordinates.
+    Touch { 
+        /// X coordinate in viewport pixels (0 = left edge).
+        x: f32, 
+        /// Y coordinate in viewport pixels (0 = top edge).
+        y: f32 
+    },
+    /// Keyboard event with key code.
+    Key { 
+        /// USB HID key code or custom key identifier.
+        code: u32 
+    },
 }
