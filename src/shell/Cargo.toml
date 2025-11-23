@@ -43,3 +43,4 @@ log = "0.4"
 [dev-dependencies]
 # Test dependencies
 tokio-test = "0.4"
+soliloquy_test_support = { path = "../../test/support" }

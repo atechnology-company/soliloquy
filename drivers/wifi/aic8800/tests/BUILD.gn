@@ -1,0 +1,21 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/test.gni")
+
+test("aic8800_init_tests") {
+  output_name = "aic8800_init_tests"
+  sources = [ "init_test.cc" ]
+  
+  deps = [
+    "//drivers/wifi/aic8800:aic8800_driver",
+    "//sdk/banjo/fuchsia.hardware.sdio",
+    "//sdk/banjo/fuchsia.hardware.sdio:fuchsia.hardware.sdio_banjo_cpp_mock",
+    "//src/devices/testing/mock-ddk",
+    "//src/devices/testing/fake-bti",
+    "//src/devices/testing/fake-resource",
+    "//zircon/system/ulib/zxtest",
+    "//zircon/system/ulib/zx",
+  ]
+}
