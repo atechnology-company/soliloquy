@@ -31,7 +31,7 @@ Soliloquy is an experimental OS that brings web technologies to the system level
 - ✅ SDK library wrappers
 
 **In Progress:**
-- 🔄 Servo browser engine integration
+- 🔄 Servo browser engine integration ✅ **V8 Runtime Integrated**
 - 🔄 WiFi driver porting (AIC8800D80)
 - 🔄 Component development
 
@@ -143,7 +143,7 @@ This is an experimental project. Contributions welcome!
 ## Documentation
 
 - [Implementation Plan](docs/implementation_plan.md)
-- [Servo Integration](docs/servo_integration.md)
+- [Servo Integration](docs/servo_integration.md) ✅ **New**
 - [Development Walkthrough](docs/walkthrough.md)
 
 ## License

@@ -1,0 +1,45 @@
+[package]
+name = "soliloquy_shell"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "soliloquy_shell"
+path = "lib.rs"
+
+[[bin]]
+name = "soliloquy_shell"
+path = "main.rs"
+
+[[bin]]
+name = "soliloquy_test"
+path = "main_test.rs"
+
+[[bin]]
+name = "v8_test"
+path = "v8_test.rs"
+
+[dependencies]
+# Fuchsia dependencies (commented out for initial testing)
+# fuchsia-async = { path = "../../../fuchsia/fuchsia/src/lib/fuchsia-async" }
+# fuchsia-component = { path = "../../../fuchsia/fuchsia/src/lib/fuchsia-component" }
+# syslog = { path = "../../../fuchsia/fuchsia/src/lib/syslog/rust" }
+futures = "0.3"
+env_logger = "0.10"
+
+# Servo dependencies (commented out until properly integrated)
+# servo = { path = "../../../vendor/servo" }
+
+# V8 Runtime
+rusty_v8 = "0.32.1"
+
+# Logging
+log = "0.4"
+
+# FIDL dependencies (commented out for initial testing)
+# fuchsia-ui-composition = { path = "../../../fuchsia/fuchsia/sdk/fidl/fuchsia.ui.composition" }
+# fuchsia-ui-views = { path = "../../../fuchsia/fuchsia/sdk/fidl/fuchsia.ui.views" }
+
+[dev-dependencies]
+# Test dependencies
+tokio-test = "0.4"
