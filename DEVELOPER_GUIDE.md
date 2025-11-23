@@ -131,6 +131,8 @@ If you are on macOS and using the Fedora instance (`undivisible@fedora@orb`):
 
 Soliloquy provides a Hardware Abstraction Layer (HAL) in `drivers/common/soliloquy_hal` that simplifies common driver tasks. All new drivers should use this HAL.
 
+📖 **For detailed driver porting instructions, see the [Driver Porting Guide](docs/driver_porting.md)** - a comprehensive walkthrough of porting Linux drivers to Soliloquy, with API mappings, HAL usage examples, and common pitfall avoidance.
+
 #### HAL Components
 
 The `soliloquy_hal` library provides:

@@ -263,7 +263,7 @@ This is an experimental project. Contributions welcome!
 ## Documentation
 
 - [Build System Guide](docs/build.md)
-- [Testing Guide](docs/testing.md) ✅ **New**
+- [Testing Guide](docs/testing.md)
 - [Servo Integration](docs/servo_integration.md)
 - [Implementation Plan](docs/implementation_plan.md)
 - [Development Walkthrough](docs/walkthrough.md)
