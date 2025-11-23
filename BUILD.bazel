@@ -3,7 +3,10 @@
 package(default_visibility = ["//visibility:public"])
 
 # Convenience target to build everything
-alias(
+filegroup(
     name = "all",
-    actual = "//src/shell:soliloquy_shell",
+    srcs = [
+        "//src/shell:soliloquy_shell",
+        "//drivers/common/soliloquy_hal",
+    ],
 )

@@ -1,0 +1,27 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "soliloquy_hal",
+    srcs = [
+        "clock_reset.cc",
+        "firmware.cc",
+        "mmio.cc",
+        "sdio.cc",
+    ],
+    hdrs = [
+        "clock_reset.h",
+        "firmware.h",
+        "mmio.h",
+        "sdio.h",
+    ],
+    deps = [
+        "@fuchsia_sdk//pkg/ddk",
+        "@fuchsia_sdk//pkg/ddktl",
+        "@fuchsia_sdk//pkg/zx",
+        "@fuchsia_sdk//pkg/mmio",
+    ],
+)

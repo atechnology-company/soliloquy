@@ -15,6 +15,6 @@ board_recovery_labels = []
 
 # Board-specific drivers to include
 board_driver_package_labels = [
-  "//boards/arm64/soliloquy/drivers/wifi/aic8800", # Our ported driver
-  # Add other essential drivers here (UART, GPIO, etc.)
+  "//drivers/wifi/aic8800:aic8800",
+  "//drivers/gpio/soliloquy_gpio:soliloquy_gpio",
 ]

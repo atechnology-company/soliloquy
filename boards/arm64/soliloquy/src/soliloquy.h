@@ -41,6 +41,7 @@ private:
 // TODO: Move these to a shared header
 #define PDEV_VID_ALLWINNER 0x1C
 #define PDEV_DID_ALLWINNER_SMHC 0x01
+#define PDEV_DID_ALLWINNER_GPIO 0x02
 #define kBtiSdio 0x02
 
 } // namespace soliloquy

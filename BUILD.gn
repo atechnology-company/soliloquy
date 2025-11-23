@@ -7,6 +7,9 @@
 group("default") {
   deps = [
     "//src/shell:soliloquy_shell",
-    # "//drivers/wifi/aic8800:aic8800",  # Enable after SDK setup
+    "//drivers/common/soliloquy_hal",
+    "//drivers/wifi/aic8800:aic8800",
+    "//drivers/gpio/soliloquy_gpio:soliloquy_gpio",
+    "//boards/arm64/soliloquy:soliloquy-package",
   ]
 }
