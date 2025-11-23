@@ -60,6 +60,19 @@ log_info "Board: $BOARD"
 # Check if fx is available and bootstrapped
 check_fx_bootstrapped
 
+# Validate component manifests before building
+log_info "Validating component manifests..."
+if [ -x "$SCRIPT_DIR/validate_manifest.sh" ]; then
+    if "$SCRIPT_DIR/validate_manifest.sh"; then
+        log_success "Manifest validation passed"
+    else
+        log_error "Manifest validation failed"
+        exit 1
+    fi
+else
+    log_warning "validate_manifest.sh not found or not executable, skipping validation"
+fi
+
 # Idempotent configuration
 fx_set_idempotent "$PRODUCT" "$BOARD" "$EXTRA_ARGS"
 

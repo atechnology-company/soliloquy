@@ -163,6 +163,7 @@ Uses Bazel with Bzlmod (MODULE.bazel):
 - `tools/soliloquy/ssh_build.sh` - Remote build from macOS to Linux
 - `tools/soliloquy/build_sdk.sh` - SDK-based cross-platform build
 - `tools/soliloquy/build_bazel.sh` - Bazel component build
+- `tools/soliloquy/validate_manifest.sh` - Validate component manifests
 - `tools/soliloquy/flash.sh` - Flash to device (fastboot)
 - `tools/soliloquy/debug.sh` - Serial console debugging
 - `tools/soliloquy/dev_ui.sh` - Start UI prototype development server
@@ -263,6 +264,9 @@ This is an experimental project. Contributions welcome!
 ## Documentation
 
 - [Build System Guide](docs/build.md)
+- [Component Manifest Guide](docs/component_manifest.md)
+- [Servo Integration](docs/servo_integration.md)
+- [Developer Guide](DEVELOPER_GUIDE.md)
 - [Testing Guide](docs/testing.md)
 - [Servo Integration](docs/servo_integration.md)
 - [Implementation Plan](docs/implementation_plan.md)

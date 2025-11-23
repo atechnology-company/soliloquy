@@ -205,6 +205,22 @@ Key Artifacts:
 Total files: 1247
 ```
 
+## Manifest Validation
+
+Before building, you can validate component manifests to catch errors early:
+
+```bash
+# Validate the shell manifest
+./tools/soliloquy/validate_manifest.sh
+
+# Validation runs automatically during build.sh
+./tools/soliloquy/build.sh
+```
+
+The validation script checks that all protocol declarations, capability routing, and manifest syntax are correct using the Fuchsia `cmc` (Component Manifest Compiler) tool.
+
+For more details on component manifests, see [Component Manifest Guide](component_manifest.md).
+
 ## Common Workflows
 
 ### First-time Setup

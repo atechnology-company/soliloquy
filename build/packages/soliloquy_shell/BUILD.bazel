@@ -1,0 +1,33 @@
+# Copyright 2025 The Soliloquy Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Bazel packaging configuration for Soliloquy Shell
+
+package(default_visibility = ["//visibility:public"])
+
+# Convenience target that depends on the shell package
+# This can be used to build the shell and its packaging metadata
+alias(
+    name = "soliloquy_shell_pkg",
+    actual = "//src/shell:soliloquy_shell",
+)
+
+# Rule to package the shell as a .far archive
+# This is a placeholder - actual implementation depends on Fuchsia Bazel rules
+genrule(
+    name = "soliloquy_shell_far",
+    srcs = [
+        "//src/shell:soliloquy_shell_bin",
+        "//src/shell:soliloquy_shell_manifest",
+    ],
+    outs = ["soliloquy_shell.far"],
+    cmd = """
+        # This is a placeholder for the actual packaging command
+        # In a real Fuchsia Bazel build, this would use pm or similar tools
+        # to create a proper .far archive
+        echo "Packaging soliloquy_shell.far" > $@
+        echo "Note: Actual .far packaging requires Fuchsia SDK Bazel rules" >> $@
+    """,
+    visibility = ["//visibility:public"],
+)
