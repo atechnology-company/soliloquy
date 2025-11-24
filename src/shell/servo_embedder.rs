@@ -231,6 +231,8 @@ impl ServoEmbedder {
             return Err(format!("Embedder not ready for loading URLs. Current state: {:?}", self.state));
         }
         
+        validate_url(url)?;
+        
         info!("Loading URL: {}", url);
         self.state = EmbedderState::Loading;
         self.current_url = Some(url.to_string());
@@ -482,4 +484,170 @@ pub enum InputEvent {
         /// USB HID key code or custom key identifier.
         code: u32 
     },
+}
+
+fn validate_url(url: &str) -> Result<(), String> {
+    if url.is_empty() {
+        return Err("URL cannot be empty".to_string());
+    }
+    
+    if url.trim().is_empty() {
+        return Err("URL cannot be only whitespace".to_string());
+    }
+    
+    let url_lower = url.to_lowercase();
+    if !url_lower.starts_with("http://") && !url_lower.starts_with("https://") {
+        return Err("URL must start with http:// or https://".to_string());
+    }
+    
+    if url.len() < 10 {
+        return Err("URL is too short to be valid".to_string());
+    }
+    
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_url_validation_valid() {
+        assert!(validate_url("https://example.com").is_ok());
+        assert!(validate_url("http://example.com").is_ok());
+        assert!(validate_url("https://www.example.com/path").is_ok());
+        assert!(validate_url("HTTP://EXAMPLE.COM").is_ok());
+    }
+
+    #[test]
+    fn test_url_validation_empty() {
+        assert!(validate_url("").is_err());
+        assert_eq!(validate_url("").unwrap_err(), "URL cannot be empty");
+    }
+
+    #[test]
+    fn test_url_validation_whitespace() {
+        assert!(validate_url("   ").is_err());
+        assert_eq!(validate_url("  ").unwrap_err(), "URL cannot be only whitespace");
+    }
+
+    #[test]
+    fn test_url_validation_invalid_scheme() {
+        assert!(validate_url("ftp://example.com").is_err());
+        assert!(validate_url("example.com").is_err());
+        assert!(validate_url("www.example.com").is_err());
+        let err = validate_url("ftp://example.com").unwrap_err();
+        assert!(err.contains("http://") || err.contains("https://"));
+    }
+
+    #[test]
+    fn test_url_validation_too_short() {
+        assert!(validate_url("http://a").is_err());
+        assert_eq!(validate_url("http://a").unwrap_err(), "URL is too short to be valid");
+    }
+
+    #[test]
+    fn test_embedder_state_transitions() {
+        let embedder = ServoEmbedder::new().expect("Should initialize");
+        assert_eq!(embedder.get_state(), &EmbedderState::Ready);
+    }
+
+    #[test]
+    fn test_embedder_load_when_uninitialized() {
+        let mut embedder = ServoEmbedder {
+            flatland_session: None,
+            view_ref: None,
+            event_queue: Arc::new(Mutex::new(Vec::new())),
+            v8_runtime: None,
+            webview: None,
+            current_url: None,
+            state: EmbedderState::Uninitialized,
+        };
+        
+        let result = embedder.load_url("https://example.com");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not ready"));
+    }
+
+    #[test]
+    fn test_embedder_load_when_initializing() {
+        let mut embedder = ServoEmbedder {
+            flatland_session: None,
+            view_ref: None,
+            event_queue: Arc::new(Mutex::new(Vec::new())),
+            v8_runtime: None,
+            webview: None,
+            current_url: None,
+            state: EmbedderState::Initializing,
+        };
+        
+        let result = embedder.load_url("https://example.com");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not ready"));
+    }
+
+    #[test]
+    fn test_embedder_repeated_loads() {
+        let mut embedder = ServoEmbedder::new().expect("Should initialize");
+        
+        assert!(embedder.load_url("https://first.com").is_ok());
+        assert_eq!(embedder.get_state(), &EmbedderState::Running);
+        assert_eq!(embedder.get_current_url(), Some(&"https://first.com".to_string()));
+        
+        assert!(embedder.load_url("https://second.com").is_ok());
+        assert_eq!(embedder.get_state(), &EmbedderState::Running);
+        assert_eq!(embedder.get_current_url(), Some(&"https://second.com".to_string()));
+    }
+
+    #[test]
+    fn test_embedder_load_invalid_url() {
+        let mut embedder = ServoEmbedder::new().expect("Should initialize");
+        
+        assert!(embedder.load_url("").is_err());
+        assert_eq!(embedder.get_state(), &EmbedderState::Ready);
+        assert_eq!(embedder.get_current_url(), None);
+    }
+
+    #[test]
+    fn test_embedder_load_url_no_scheme() {
+        let mut embedder = ServoEmbedder::new().expect("Should initialize");
+        
+        let result = embedder.load_url("example.com");
+        assert!(result.is_err());
+        assert_eq!(embedder.get_state(), &EmbedderState::Ready);
+    }
+
+    #[test]
+    fn test_embedder_state_remains_running_after_multiple_loads() {
+        let mut embedder = ServoEmbedder::new().expect("Should initialize");
+        
+        for i in 0..5 {
+            let url = format!("https://example{}.com", i);
+            assert!(embedder.load_url(&url).is_ok());
+            assert_eq!(embedder.get_state(), &EmbedderState::Running);
+        }
+    }
+
+    #[test]
+    fn test_embedder_error_state() {
+        let embedder = ServoEmbedder {
+            flatland_session: None,
+            view_ref: None,
+            event_queue: Arc::new(Mutex::new(Vec::new())),
+            v8_runtime: None,
+            webview: None,
+            current_url: None,
+            state: EmbedderState::Error("Test error".to_string()),
+        };
+        
+        assert_eq!(embedder.get_state(), &EmbedderState::Error("Test error".to_string()));
+    }
+
+    #[test]
+    fn test_url_validation_edge_cases() {
+        assert!(validate_url("https://").is_err());
+        assert!(validate_url("https://a.b").is_ok());
+        assert!(validate_url("https://example.com:8080").is_ok());
+        assert!(validate_url("https://example.com/path?query=value#fragment").is_ok());
+    }
 }
