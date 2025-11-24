@@ -205,6 +205,141 @@ Key Artifacts:
 Total files: 1247
 ```
 
+## Soliloquy Product Configuration
+
+Soliloquy provides a first-class product configuration that bundles the shell, WiFi driver, board drivers, and core services into a unified product target.
+
+### What is the Soliloquy Product?
+
+The Soliloquy product (`//product:soliloquy`) is a curated collection of packages that provides a complete, bootable system image. It includes:
+
+- **Base Packages** (always in the system image):
+  - Soliloquy Shell (`//src/shell:soliloquy_shell`)
+  - Board and platform drivers (`//boards/arm64/soliloquy`)
+  - GPIO drivers (`//drivers/gpio/soliloquy_gpio`)
+  - WiFi driver for AIC8800 (`//drivers/wifi/aic8800`)
+  - Hardware abstraction layer (`//drivers/common/soliloquy_hal`)
+
+- **Universe Packages** (available for dynamic installation):
+  - FIDL UI bindings (Flatland, Views, Input)
+  - Test infrastructure
+
+### Building with the Soliloquy Product
+
+#### Using fx (Fuchsia Build System)
+
+If you have a full Fuchsia checkout, use `fx set` to configure the build with the Soliloquy product:
+
+```bash
+# Configure the build for Soliloquy product on arm64
+cd fuchsia/fuchsia
+fx set core.arm64 --with //product:soliloquy
+
+# Build the product
+fx build
+
+# The product image will be at:
+# out/default/obj/build/images/soliloquy/soliloquy.zbi
+```
+
+#### Using the Build Script
+
+For a streamlined experience, use the provided build scripts:
+
+```bash
+# Full source build with Soliloquy product (Linux)
+./tools/soliloquy/build.sh --product core.arm64 --with //product:soliloquy
+
+# Remote build (macOS)
+./tools/soliloquy/ssh_build.sh --stream-logs user@linux-server
+# Then on the remote machine:
+cd fuchsia/fuchsia && fx set core.arm64 --with //product:soliloquy && fx build
+```
+
+### Output Artifacts
+
+After building the Soliloquy product, you'll find the following artifacts:
+
+```
+fuchsia/fuchsia/out/default/
+├── obj/build/images/soliloquy/
+│   └── soliloquy.zbi          # Bootable Zircon Boot Image
+├── soliloquy_shell.far         # Shell component package
+└── aic8800.far                 # WiFi driver package
+```
+
+**Key artifact paths:**
+- **Product ZBI**: `out/default/obj/build/images/soliloquy/soliloquy.zbi`
+- **Legacy ZBI**: `out/default/fuchsia.zbi` (for backwards compatibility)
+
+### Flashing the Soliloquy Product
+
+The `flash.sh` script defaults to the Soliloquy product image:
+
+```bash
+# Flash using default product image
+./tools/soliloquy/flash.sh
+
+# Flash a custom image
+./tools/soliloquy/flash.sh /path/to/custom.zbi
+
+# Flash the legacy image
+./tools/soliloquy/flash.sh fuchsia/fuchsia/out/default/fuchsia.zbi
+```
+
+The script will:
+1. Look for the product image at `obj/build/images/soliloquy/soliloquy.zbi`
+2. Fall back to the legacy `fuchsia.zbi` if the product image isn't found
+3. Provide helpful instructions if no image is found
+
+### Customizing the Product
+
+The product configuration is defined in two files:
+
+1. **`product/soliloquy.gni`** - Declares package lists:
+   ```gn
+   soliloquy_base_packages = [
+     "//src/shell:soliloquy_shell",
+     "//drivers/wifi/aic8800:aic8800",
+     # ... more packages
+   ]
+   
+   soliloquy_universe_packages = [
+     "//gen/fidl/fuchsia_ui_composition",
+     # ... more packages
+   ]
+   ```
+
+2. **`product/BUILD.gn`** - Exposes product targets:
+   ```gn
+   group("soliloquy") {
+     deps = soliloquy_base_packages + soliloquy_universe_packages
+   }
+   ```
+
+To add packages to the product:
+1. Add dependencies to `soliloquy_base_packages` (for system packages) or `soliloquy_universe_packages` (for optional packages)
+2. Rebuild: `fx build`
+3. Flash: `./tools/soliloquy/flash.sh`
+
+### Product Build Targets
+
+The product configuration provides several build targets:
+
+- `//product:soliloquy` - Complete product with all packages
+- `//product:soliloquy_base` - Base packages only
+- `//product:soliloquy_universe` - Universe packages only
+- `//build/packages:soliloquy_image` - Image-producing target
+
+### Dependencies and Prerequisites
+
+The Soliloquy product requires:
+- Full Fuchsia source checkout (via `./tools/soliloquy/setup.sh`)
+- GN build system configured (via `fx set`)
+- Ninja build tool (automatically invoked by `fx build`)
+
+For component-only development without the full product, see the SDK Build or Bazel Build methods above.
+
 ## Manifest Validation
 
 Before building, you can validate component manifests to catch errors early:
