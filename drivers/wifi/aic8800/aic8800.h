@@ -42,6 +42,11 @@ private:
   zx_status_t ReadChipId(uint32_t *out_chip_id);
   zx_status_t WaitForFirmwareReady();
   zx_status_t ResetChip();
+  zx_status_t ConfigurePatchTables();
+  
+  zx_status_t SdioTx(const uint8_t *buf, size_t len, uint8_t func_num);
+  zx_status_t SdioRx(uint8_t *buf, size_t len, uint8_t func_num);
+  zx_status_t SdioFlowControl(uint8_t *out_available_buffers);
 
   ddk::SdioProtocolClient sdio_;
   soliloquy_hal::SdioHelper sdio_helper_;
@@ -69,6 +74,15 @@ private:
   static constexpr uint32_t kRegFwDownloadSize = 0x00100004;
   static constexpr uint32_t kRegFwDownloadCtrl = 0x00100008;
   
+  static constexpr uint8_t kRegByteModeLen = 0x02;
+  static constexpr uint8_t kRegSleepCtrl = 0x05;
+  static constexpr uint8_t kRegWakeup = 0x09;
+  static constexpr uint8_t kRegFlowCtrl = 0x0A;
+  
+  static constexpr uint8_t kFlowCtrlMask = 0x7F;
+  static constexpr uint32_t kFlowCtrlRetryCount = 50;
+  static constexpr uint32_t kBufferSize = 1536;
+  
   static constexpr uint32_t kIntFwReady = 1 << 0;
   static constexpr uint32_t kIntTxDone = 1 << 1;
   static constexpr uint32_t kIntRxReady = 1 << 2;
@@ -92,6 +106,16 @@ private:
   
   static constexpr size_t kBlockSize = 512;
   static constexpr int kFwReadyTimeoutMs = 5000;
+  
+  static constexpr uint32_t kRamFmacFwAddrU02 = 0x00120000;
+  static constexpr uint32_t kPatchMagicNum = 0x48435450;
+  static constexpr uint32_t kPatchMagicNum2 = 0x50544348;
+  static constexpr uint32_t kPatchStartAddr = 0x001D7000;
+  
+  struct PatchEntry {
+    uint32_t offset;
+    uint32_t value;
+  };
 };
 
 } // namespace aic8800

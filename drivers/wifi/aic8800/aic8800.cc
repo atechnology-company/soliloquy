@@ -92,6 +92,86 @@ zx_status_t Aic8800::ResetChip() {
   return ZX_OK;
 }
 
+zx_status_t Aic8800::SdioFlowControl(uint8_t *out_available_buffers) {
+  if (!out_available_buffers) {
+    return ZX_ERR_INVALID_ARGS;
+  }
+  
+  for (uint32_t retry = 0; retry < kFlowCtrlRetryCount; retry++) {
+    uint8_t fc_reg = 0;
+    zx_status_t status = sdio_helper_.ReadByte(kRegFlowCtrl, &fc_reg);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Flow control register read failed: %s",
+             zx_status_get_string(status));
+      return status;
+    }
+    
+    uint8_t available = fc_reg & kFlowCtrlMask;
+    if (available != 0) {
+      *out_available_buffers = available;
+      return ZX_OK;
+    }
+    
+    if (retry < 30) {
+      zx::nanosleep(zx::deadline_after(zx::usec(200)));
+    } else if (retry < 40) {
+      zx::nanosleep(zx::deadline_after(zx::msec(1)));
+    } else {
+      zx::nanosleep(zx::deadline_after(zx::msec(10)));
+    }
+  }
+  
+  zxlogf(ERROR, "aic8800: Flow control timeout - no buffers available");
+  return ZX_ERR_TIMED_OUT;
+}
+
+zx_status_t Aic8800::SdioTx(const uint8_t *buf, size_t len, uint8_t func_num) {
+  if (!buf || len == 0) {
+    return ZX_ERR_INVALID_ARGS;
+  }
+  
+  size_t aligned_len = (len + kBlockSize - 1) / kBlockSize * kBlockSize;
+  
+  uint8_t available_buffers = 0;
+  zx_status_t status = SdioFlowControl(&available_buffers);
+  if (status != ZX_OK) {
+    return status;
+  }
+  
+  size_t required_buffers = (aligned_len + kBufferSize - 1) / kBufferSize;
+  if (available_buffers < required_buffers) {
+    zxlogf(ERROR, "aic8800: Insufficient buffers for TX: need %zu, have %u",
+           required_buffers, available_buffers);
+    return ZX_ERR_NO_RESOURCES;
+  }
+  
+  status = sdio_helper_.WriteMultiBlock(func_num, buf, aligned_len);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: SDIO TX failed (func %u, len %zu): %s",
+           func_num, aligned_len, zx_status_get_string(status));
+    return status;
+  }
+  
+  return ZX_OK;
+}
+
+zx_status_t Aic8800::SdioRx(uint8_t *buf, size_t len, uint8_t func_num) {
+  if (!buf || len == 0) {
+    return ZX_ERR_INVALID_ARGS;
+  }
+  
+  size_t aligned_len = (len + kBlockSize - 1) / kBlockSize * kBlockSize;
+  
+  zx_status_t status = sdio_helper_.ReadMultiBlock(func_num, buf, aligned_len);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: SDIO RX failed (func %u, len %zu): %s",
+           func_num, aligned_len, zx_status_get_string(status));
+    return status;
+  }
+  
+  return ZX_OK;
+}
+
 zx_status_t Aic8800::WaitForFirmwareReady() {
   zxlogf(INFO, "aic8800: Waiting for firmware ready...");
   
@@ -121,6 +201,116 @@ zx_status_t Aic8800::WaitForFirmwareReady() {
   
   zxlogf(ERROR, "aic8800: Timeout waiting for firmware ready");
   return ZX_ERR_TIMED_OUT;
+}
+
+zx_status_t Aic8800::ConfigurePatchTables() {
+  zxlogf(INFO, "aic8800: Configuring patch tables...");
+  
+  static const PatchEntry kPatchTable8800D80[] = {
+    {0x00b4, 0xf3010000},
+    {0x0170, 0x0001000A},
+  };
+  
+  constexpr uint32_t kConfigBaseAddr = kRamFmacFwAddrU02 + 0x0198;
+  constexpr uint32_t kPatchStrBaseAddr = kRamFmacFwAddrU02 + 0x01A0;
+  
+  uint32_t config_base = 0;
+  uint8_t config_bytes[4];
+  for (int i = 0; i < 4; i++) {
+    zx_status_t status = sdio_helper_.ReadByte(kConfigBaseAddr + i, &config_bytes[i]);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Failed to read config base address: %s",
+             zx_status_get_string(status));
+      return status;
+    }
+  }
+  config_base = *reinterpret_cast<uint32_t*>(config_bytes);
+  
+  uint32_t patch_str_base = 0;
+  uint8_t patch_str_bytes[4];
+  for (int i = 0; i < 4; i++) {
+    zx_status_t status = sdio_helper_.ReadByte(kPatchStrBaseAddr + i, &patch_str_bytes[i]);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Failed to read patch string base address: %s",
+             zx_status_get_string(status));
+      return status;
+    }
+  }
+  patch_str_base = *reinterpret_cast<uint32_t*>(patch_str_bytes);
+  
+  zxlogf(INFO, "aic8800: Config base: 0x%08x, Patch str base: 0x%08x",
+         config_base, patch_str_base);
+  
+  auto write_u32 = [this](uint32_t addr, uint32_t value) -> zx_status_t {
+    uint8_t bytes[4];
+    bytes[0] = value & 0xFF;
+    bytes[1] = (value >> 8) & 0xFF;
+    bytes[2] = (value >> 16) & 0xFF;
+    bytes[3] = (value >> 24) & 0xFF;
+    for (int i = 0; i < 4; i++) {
+      zx_status_t status = sdio_helper_.WriteByte(addr + i, bytes[i]);
+      if (status != ZX_OK) {
+        return status;
+      }
+    }
+    return ZX_OK;
+  };
+  
+  constexpr size_t kPatchOfstMagicNum = 0;
+  constexpr size_t kPatchOfstPairStart = 4;
+  constexpr size_t kPatchOfstMagicNum2 = 8;
+  constexpr size_t kPatchOfstPairCount = 12;
+  constexpr size_t kPatchOfstBlockSize = 32;
+  
+  zx_status_t status = write_u32(patch_str_base + kPatchOfstMagicNum, kPatchMagicNum);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to write patch magic number");
+    return status;
+  }
+  
+  status = write_u32(patch_str_base + kPatchOfstMagicNum2, kPatchMagicNum2);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to write patch magic number 2");
+    return status;
+  }
+  
+  status = write_u32(patch_str_base + kPatchOfstPairStart, kPatchStartAddr);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to write patch pair start");
+    return status;
+  }
+  
+  size_t patch_count = sizeof(kPatchTable8800D80) / sizeof(PatchEntry);
+  status = write_u32(patch_str_base + kPatchOfstPairCount, patch_count);
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to write patch pair count");
+    return status;
+  }
+  
+  for (size_t i = 0; i < patch_count; i++) {
+    uint32_t entry_addr = kPatchStartAddr + (i * 8);
+    status = write_u32(entry_addr, kPatchTable8800D80[i].offset + config_base);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Failed to write patch entry %zu offset", i);
+      return status;
+    }
+    status = write_u32(entry_addr + 4, kPatchTable8800D80[i].value);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Failed to write patch entry %zu value", i);
+      return status;
+    }
+  }
+  
+  for (int i = 0; i < 4; i++) {
+    status = write_u32(patch_str_base + kPatchOfstBlockSize + (i * 4), 0);
+    if (status != ZX_OK) {
+      zxlogf(ERROR, "aic8800: Failed to write block size %d", i);
+      return status;
+    }
+  }
+  
+  zxlogf(INFO, "aic8800: Patch configuration complete (%zu entries)", patch_count);
+  return ZX_OK;
 }
 
 zx_status_t Aic8800::InitHw() {
@@ -162,9 +352,16 @@ zx_status_t Aic8800::InitHw() {
     return ZX_ERR_BUFFER_TOO_SMALL;
   }
 
-  status = sdio_helper_.DownloadFirmware(fw_vmo, fw_size, kFirmwareBaseAddr);
+  status = sdio_helper_.DownloadFirmware(fw_vmo, fw_size, kRamFmacFwAddrU02);
   if (status != ZX_OK) {
     zxlogf(ERROR, "aic8800: Failed to download firmware: %s",
+           zx_status_get_string(status));
+    return status;
+  }
+  
+  status = ConfigurePatchTables();
+  if (status != ZX_OK) {
+    zxlogf(ERROR, "aic8800: Failed to configure patch tables: %s",
            zx_status_get_string(status));
     return status;
   }
