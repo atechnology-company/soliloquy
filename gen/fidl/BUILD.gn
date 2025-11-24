@@ -4,6 +4,7 @@ group("fidl_bindings") {
   deps = [
     "fuchsia_ui_composition",
     "fuchsia_ui_views",
+    "fuchsia_ui_app",
     "fuchsia_input",
   ]
 }

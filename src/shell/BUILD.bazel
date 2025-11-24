@@ -32,6 +32,7 @@ rust_binary(
     deps = [
         "//gen/fidl/fuchsia_ui_composition",
         "//gen/fidl/fuchsia_ui_views",
+        "//gen/fidl/fuchsia_ui_app",
         "//gen/fidl/fuchsia_input",
         "//vendor/servo:servo_mock",
         # TODO: Add Fuchsia SDK dependencies
