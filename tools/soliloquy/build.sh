@@ -41,8 +41,12 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Examples:"
             echo "  $0                                    # Build with defaults"
+            echo "  $0 --product core.arm64 --extra-args '--with //product:soliloquy'  # Soliloquy product"
             echo "  $0 --product workbench_eng.arm64     # Build different product"
             echo "  $0 --board boards/arm64/qemu          # Build for different board"
+            echo ""
+            echo "To use the Soliloquy product configuration:"
+            echo "  fx set core.arm64 --with //product:soliloquy && fx build"
             exit 0
             ;;
         *)

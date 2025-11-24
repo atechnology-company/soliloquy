@@ -115,6 +115,11 @@ This will:
 3. **Build using fx:**
 ```bash
 source fuchsia/fuchsia/scripts/fx-env.sh
+# Use the Soliloquy product configuration (recommended)
+fx set core.arm64 --with //product:soliloquy
+fx build
+
+# Or use the minimal configuration
 fx set minimal.arm64 --board soliloquy
 fx build
 ```
@@ -164,7 +169,7 @@ Uses Bazel with Bzlmod (MODULE.bazel):
 - `tools/soliloquy/build_sdk.sh` - SDK-based cross-platform build
 - `tools/soliloquy/build_bazel.sh` - Bazel component build
 - `tools/soliloquy/validate_manifest.sh` - Validate component manifests
-- `tools/soliloquy/flash.sh` - Flash to device (fastboot)
+- `tools/soliloquy/flash.sh` - Flash to device (defaults to Soliloquy product image)
 - `tools/soliloquy/debug.sh` - Serial console debugging
 - `tools/soliloquy/dev_ui.sh` - Start UI prototype development server
 
