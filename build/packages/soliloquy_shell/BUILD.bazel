@@ -14,16 +14,14 @@ alias(
 genrule(
     name = "soliloquy_shell_far",
     srcs = [
-        "//src/shell:soliloquy_shell_bin",
-        "//src/shell:soliloquy_shell_manifest",
+        "//src/shell:soliloquy_shell",
+        "//src/shell/meta:soliloquy_shell.cml",
     ],
     outs = ["soliloquy_shell.far"],
     cmd = """
-        # This is a placeholder for the actual packaging command
-        # In a real Fuchsia Bazel build, this would use pm or similar tools
-        # to create a proper .far archive
-        echo "Packaging soliloquy_shell.far" > $@
-        echo "Note: Actual .far packaging requires Fuchsia SDK Bazel rules" >> $@
+        echo "Packaging Soliloquy Shell component..."
+        # TODO: Use actual far packaging tool from SDK
+        touch $@
     """,
     visibility = ["//visibility:public"],
 )
