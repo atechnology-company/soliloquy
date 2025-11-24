@@ -118,4 +118,101 @@ mod tests {
         
         info!("Complete FIDL workflow test passed");
     }
+
+    #[test]
+    fn test_shell_with_mock_view_provider() {
+        let (view_provider, _view_rx) = soliloquy_test_support::MockViewProvider::new();
+        let (flatland, _flatland_rx) = soliloquy_test_support::MockFlatland::new();
+        
+        let view_token = soliloquy_test_support::mocks::view_provider::ViewCreationToken { value: 42 };
+        let viewport_token = soliloquy_test_support::mocks::view_provider::ViewportCreationToken { value: 100 };
+        
+        view_provider.create_view2(view_token.clone(), viewport_token.clone());
+        
+        let events = view_provider.get_events();
+        assert_eq!(events.len(), 1);
+        
+        match &events[0] {
+            soliloquy_test_support::mocks::view_provider::ViewProviderEvent::CreateView2 {
+                view_creation_token,
+                viewport_creation_token,
+            } => {
+                assert_eq!(view_creation_token.value, 42);
+                assert_eq!(viewport_creation_token.value, 100);
+            }
+            _ => panic!("Expected CreateView2 event"),
+        }
+        
+        assert_eq!(view_provider.get_view_created_count(), 1);
+        
+        info!("Shell with mock ViewProvider test passed");
+    }
+
+    #[test]
+    fn test_view_provider_flatland_handshake() {
+        let (view_provider, _view_rx) = soliloquy_test_support::MockViewProvider::new();
+        let (flatland, _flatland_rx) = soliloquy_test_support::MockFlatland::new();
+        
+        let view_token = soliloquy_test_support::mocks::view_provider::ViewCreationToken { value: 123 };
+        let viewport_token = soliloquy_test_support::mocks::view_provider::ViewportCreationToken { value: 456 };
+        
+        view_provider.create_view2(view_token, viewport_token);
+        
+        flatland.create_transform(1);
+        flatland.set_content(1, 200);
+        
+        let present_args = soliloquy_test_support::mocks::flatland::PresentArgs {
+            requested_presentation_time: 0,
+            acquire_fences: vec![],
+            release_fences: vec![],
+        };
+        flatland.present(present_args);
+        
+        assert_eq!(view_provider.get_view_created_count(), 1);
+        assert_eq!(flatland.get_present_count(), 1);
+        
+        let flatland_events = flatland.get_events();
+        assert_eq!(flatland_events.len(), 2);
+        
+        info!("ViewProvider/Flatland handshake test passed");
+    }
+
+    #[test]
+    fn test_multiple_view_provider_calls() {
+        let (view_provider, _view_rx) = soliloquy_test_support::MockViewProvider::new();
+        
+        for i in 0..5 {
+            let view_token = soliloquy_test_support::mocks::view_provider::ViewCreationToken { value: i };
+            let viewport_token = soliloquy_test_support::mocks::view_provider::ViewportCreationToken { value: i + 100 };
+            view_provider.create_view2(view_token, viewport_token);
+        }
+        
+        assert_eq!(view_provider.get_view_created_count(), 5);
+        assert_eq!(view_provider.get_events().len(), 5);
+        
+        info!("Multiple ViewProvider calls test passed");
+    }
+
+    #[test]
+    fn test_flatland_connection_observable() {
+        let (flatland, _flatland_rx) = soliloquy_test_support::MockFlatland::new();
+        
+        flatland.create_transform(1);
+        flatland.create_transform(2);
+        flatland.set_content(1, 300);
+        
+        let events = flatland.get_events();
+        assert_eq!(events.len(), 3);
+        
+        let present_args = soliloquy_test_support::mocks::flatland::PresentArgs {
+            requested_presentation_time: 1000,
+            acquire_fences: vec![],
+            release_fences: vec![],
+        };
+        flatland.present(present_args);
+        
+        assert_eq!(flatland.get_present_count(), 1);
+        
+        info!("Flatland connection observable test passed");
+    }
 }

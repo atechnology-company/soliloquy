@@ -34,3 +34,56 @@ fuchsia_package("soliloquy_shell") {
   package_name = "soliloquy_shell"
   deps = [ ":component" ]
 }
+
+rustc_test("shell_unit_tests") {
+  edition = "2021"
+  source_root = "servo_embedder.rs"
+  sources = [
+    "servo_embedder.rs",
+    "v8_runtime.rs",
+  ]
+  deps = [
+    "//src/lib/fuchsia-async",
+    "//third_party/rust_crates:futures",
+    "//third_party/rust_crates:log",
+    "//third_party/rust_crates:rusty_v8",
+  ]
+}
+
+rustc_test("shell_integration_tests") {
+  edition = "2021"
+  source_root = "integration_tests.rs"
+  sources = [
+    "integration_tests.rs",
+    "servo_embedder.rs",
+    "v8_runtime.rs",
+  ]
+  deps = [
+    "//src/lib/fuchsia-async",
+    "//third_party/rust_crates:futures",
+    "//third_party/rust_crates:log",
+    "//third_party/rust_crates:rusty_v8",
+  ]
+}
+
+rustc_test("shell_fidl_integration_tests") {
+  edition = "2021"
+  source_root = "fidl_integration_tests.rs"
+  sources = [
+    "fidl_integration_tests.rs",
+  ]
+  deps = [
+    "//test/support:soliloquy_test_support",
+    "//third_party/rust_crates:futures",
+    "//third_party/rust_crates:log",
+  ]
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    ":shell_unit_tests",
+    ":shell_integration_tests",
+    ":shell_fidl_integration_tests",
+  ]
+}
