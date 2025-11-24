@@ -13,4 +13,5 @@ board_recovery_labels = []
 board_driver_package_labels = [
   "//drivers/wifi/aic8800:aic8800",
   "//drivers/gpio/soliloquy_gpio:soliloquy_gpio",
+  "//drivers/gpu/mali_g57:mali_g57",
 ]
