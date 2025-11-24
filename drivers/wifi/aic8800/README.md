@@ -12,7 +12,8 @@ The AIC8800 is a WiFi 4 (802.11n) chipset connected via SDIO. This driver implem
 drivers/wifi/aic8800/
 ├── aic8800.h              # Main driver header
 ├── aic8800.cc             # Main driver implementation
-├── BUILD.gn               # Build configuration
+├── BUILD.gn               # Build configuration (GN)
+├── BUILD.bazel            # Build configuration (Bazel)
 ├── README.md              # This file
 ├── firmware/              # Firmware binaries
 │   └── aic8800DC/         # AIC8800DC firmware files
@@ -39,6 +40,12 @@ Build the driver using GN:
 
 ```bash
 fx build //drivers/wifi/aic8800:aic8800
+```
+
+Or with Bazel:
+
+```bash
+bazel build //drivers/wifi/aic8800:aic8800
 ```
 
 Or build everything:
@@ -94,7 +101,12 @@ Key registers (all 32-bit, little-endian):
 | 0x0000000C | REG_HOST_CTRL | Host control |
 | 0x00000010 | REG_INT_STATUS | Interrupt status |
 | 0x00000014 | REG_INT_MASK | Interrupt mask |
+| 0x00000002 | REG_BYTEMODE_LEN | RX length in byte mode |
+| 0x00000005 | REG_SLEEP_CTRL | Sleep control |
+| 0x00000009 | REG_WAKEUP | Wakeup trigger |
+| 0x0000000A | REG_FLOW_CTRL | Flow control/buffer status |
 | 0x00100000 | REG_FW_DOWNLOAD_ADDR | Firmware download base |
+| 0x00120000 | RAM_FMAC_FW_ADDR_U02 | Firmware RAM address (U02) |
 
 See `mock/src/register.rs` for complete register definitions.
 
@@ -105,31 +117,68 @@ See `mock/src/register.rs` for complete register definitions.
 3. **Chip ID**: Read chip ID and verify (0x88000001 for AIC8800DC)
 4. **Reset**: Assert and deassert reset via HOST_CTRL register
 5. **Firmware Load**: Load firmware from package
-6. **Firmware Download**: Download firmware to device RAM via SDIO
-7. **Wait Ready**: Poll FW_STATUS register for READY state
-8. **Enable**: Enable chip via HOST_CTRL register
+6. **Firmware Download**: Download firmware to device RAM (0x00120000) via SDIO
+7. **Patch Configuration**: Program patch tables with magic numbers and configuration
+8. **Wait Ready**: Poll FW_STATUS register for READY state
+9. **Enable**: Enable chip via HOST_CTRL register
 
 ## SDIO Data Path
 
-### Read Operations
+### Flow Control
+
+The driver implements flow control based on the Linux reference implementation:
 
 ```cpp
-// Read a single byte
+// Check available buffers before transmitting
+uint8_t available_buffers;
+SdioFlowControl(&available_buffers);  // Polls REG_FLOW_CTRL with timeout
+```
+
+Flow control behavior:
+- Reads `REG_FLOW_CTRL` (0x0A) and masks with 0x7F
+- Retries up to 50 times with adaptive delays (200µs → 1ms → 10ms)
+- Returns number of available 1536-byte buffers
+
+### TX Operations
+
+```cpp
+// Transmit data with flow control
+const uint8_t tx_data[256];
+SdioTx(tx_data, sizeof(tx_data), 7);  // Function 7 for TX
+
+// Flow control is checked automatically
+// Length is block-aligned to 512 bytes
+```
+
+### RX Operations
+
+```cpp
+// Receive data
+uint8_t rx_data[1024];
+SdioRx(rx_data, sizeof(rx_data), 8);  // Function 8 for RX
+
+// Length is block-aligned to 512 bytes
+```
+
+### Byte Operations
+
+```cpp
+// Read a single byte (for registers)
 uint8_t value;
 sdio_helper_.ReadByte(address, &value);
 
-// Read multiple bytes
-uint8_t buffer[1024];
-sdio_helper_.ReadMultiBlock(address, buffer, sizeof(buffer));
+// Write a single byte (for registers)
+sdio_helper_.WriteByte(address, value);
 ```
 
-### Write Operations
+### Block Operations
 
 ```cpp
-// Write a single byte
-sdio_helper_.WriteByte(address, value);
+// Read multiple blocks (for data)
+uint8_t buffer[1024];
+sdio_helper_.ReadMultiBlock(address, buffer, sizeof(buffer));
 
-// Write multiple bytes
+// Write multiple blocks (for data)
 uint8_t buffer[1024];
 sdio_helper_.WriteMultiBlock(address, buffer, sizeof(buffer));
 ```
@@ -142,9 +191,23 @@ zx::vmo fw_vmo;
 size_t fw_size;
 FirmwareLoader::LoadFirmware(parent(), "fmacfw_8800d80.bin", &fw_vmo, &fw_size);
 
-// Download to device
-sdio_helper_.DownloadFirmware(fw_vmo, fw_size, 0x00100000);
+// Download to device RAM
+sdio_helper_.DownloadFirmware(fw_vmo, fw_size, 0x00120000);
 ```
+
+### Patch Configuration
+
+After firmware download, patch tables are configured:
+
+```cpp
+ConfigurePatchTables();  // Programs patch magic numbers and entries
+```
+
+The patch table structure (from Linux reference):
+- Magic numbers: 0x48435450 ("PTCH"), 0x50544348 ("HCTP")
+- Patch entries at 0x001D7000:
+  - {config_base + 0x00b4, 0xf3010000} - Enable 2.4GHz only
+  - {config_base + 0x0170, 0x0001000A} - RX aggregation counter
 
 ## WLANPHY Protocol Implementation
 

@@ -1,184 +1,184 @@
-# AIC8800 Driver Port - Commit Summary
+# AIC8800 SDIO Data Path Implementation
 
-## Overview
-Implemented comprehensive mock utilities and Rust tests for the AIC8800 WiFi driver, along with expanded C++ driver implementation with proper register constants and full initialization sequence.
+## Summary
 
-## Primary Focus (Task Requirement: "focus on mock utilities and Rust tests first")
+This commit implements the missing SDIO data path for the AIC8800 WiFi driver, mirroring the Linux reference implementation flow. The changes include:
 
-### ✅ Rust Mock Utilities (950+ lines)
-- **mock/src/sdio.rs** - Complete SDIO device simulation
-  - Memory-mapped register space
-  - Byte and block read/write operations
-  - Firmware download simulation
-  - Transaction history for verification
-  - Error injection for testing
-- **mock/src/firmware.rs** - Firmware loader simulation
-  - Multiple firmware file support
-  - Load tracking and counting
-  - Test firmware generation
-- **mock/src/register.rs** - Register definitions and helpers
-  - Complete register map
-  - Bit manipulation helpers
-  - Chip ID validation
-  - Status checking utilities
+1. **SDIO TX/RX Helper Methods** - Centralized SDIO operations with flow control
+2. **Flow Control Implementation** - Timeout-based buffer availability checking
+3. **Firmware Patch Configuration** - Port of patch table programming from Linux reference
+4. **Bazel Build Support** - Added BUILD.bazel for Bazel build system
 
-### ✅ Rust Integration Tests (200+ lines)
-- **tests/integration_test.rs** - 10 comprehensive tests
-  - Full initialization flow
-  - Register sequences
-  - Firmware download and verification
-  - Error recovery
-  - Transaction tracking
-  - Block transfers
-  - Interrupt handling
-  - Status transitions
-  - MAC address operations
+## Changes Made
 
-### ✅ Test Results
+### drivers/wifi/aic8800/aic8800.h
+
+**Added Constants:**
+- SDIO register definitions (flow control, sleep, wakeup)
+- Flow control parameters (mask, retry count, buffer size)
+- Patch table constants (magic numbers, addresses)
+- RAM firmware address for U02 chip revision
+
+**Added Methods:**
+- `SdioTx()` - Transmit data with flow control
+- `SdioRx()` - Receive data
+- `SdioFlowControl()` - Check buffer availability
+- `ConfigurePatchTables()` - Configure patch tables in device memory
+
+**Added Types:**
+- `PatchEntry` struct for patch table entries
+
+### drivers/wifi/aic8800/aic8800.cc
+
+**SdioFlowControl():**
+- Implements flow control register polling (SDIOWIFI_FLOW_CTRL_REG)
+- Retry logic with adaptive delays (200µs → 1ms → 10ms)
+- Returns available buffer count via kFlowCtrlMask (0x7F)
+- Mirrors Linux `aicwf_sdio_flow_ctrl()` semantics
+
+**SdioTx():**
+- Validates buffer availability via flow control
+- Calculates required buffers based on kBufferSize (1536 bytes)
+- Block-aligns transfer length (512-byte blocks)
+- Uses SdioHelper::WriteMultiBlock for actual transfer
+- Comprehensive error logging
+
+**SdioRx():**
+- Block-aligns transfer length
+- Uses SdioHelper::ReadMultiBlock
+- Error logging for failures
+
+**ConfigurePatchTables():**
+- Reads config base and patch structure base from firmware memory
+- Writes patch magic numbers (0x48435450, 0x50544348)
+- Programs patch table entries from kPatchTable8800D80:
+  - {0x00b4, 0xf3010000} - Enable 2.4GHz only
+  - {0x0170, 0x0001000A} - RX aggregation counter
+- Sets block sizes to 0 (unused)
+- Mirrors Linux `aicwf_patch_config_8800d80()` logic
+
+**InitHw() Updates:**
+- Changed firmware download address to kRamFmacFwAddrU02 (0x00120000)
+- Calls ConfigurePatchTables() after firmware download
+- Maintains existing flow: reset → download → patch → wait → enable
+
+### drivers/wifi/aic8800/BUILD.bazel (NEW)
+
+- Created Bazel build target `//drivers/wifi/aic8800:aic8800`
+- Links against soliloquy_hal
+- Includes Fuchsia SDK dependencies:
+  - ddktl, ddk, zx, fbl
+  - fuchsia.hardware.sdio (banjo)
+  - fuchsia.hardware.wlanphyimpl (banjo)
+
+## Linux Reference Mapping
+
+| Linux Function | Fuchsia Equivalent | Location |
+|----------------|-------------------|----------|
+| `sdio_readb` (flow ctrl) | `sdio_helper_.ReadByte(kRegFlowCtrl)` | SdioFlowControl() |
+| `sdio_writesb` (func 7) | `sdio_helper_.WriteMultiBlock(7, ...)` | SdioTx() |
+| `sdio_readsb` (func 8) | `sdio_helper_.ReadMultiBlock(8, ...)` | SdioRx() |
+| `aicwf_sdio_flow_ctrl` | `SdioFlowControl()` | aic8800.cc:95 |
+| `aicwf_patch_config_8800d80` | `ConfigurePatchTables()` | aic8800.cc:206 |
+
+## Linux Reference Files Analyzed
+
+From `linux_reference/aic8800_fdrv/`:
+- `aicwf_sdio.c` - SDIO operations, flow control, TX/RX
+  - Lines 49-80: Flow control with retry logic
+  - Lines 82-91: TX via sdio_writesb to function 7
+  - Lines 93-112: RX via sdio_readsb from function 8
+  
+From `linux_reference/aic_load_fw/`:
+- `aic_compat_8800d80.c` - Firmware patch configuration
+  - Lines 63-96: Patch table definitions
+  - Lines 118-269: Patch configuration sequence with magic numbers
+
+## Register Definitions
+
+| Register | Address | Purpose |
+|----------|---------|---------|
+| kRegByteModeLen | 0x02 | RX length in bytemode |
+| kRegSleepCtrl | 0x05 | Sleep control |
+| kRegWakeup | 0x09 | Wakeup trigger |
+| kRegFlowCtrl | 0x0A | Flow control/buffer status |
+
+## Patch Table Structure
+
+Based on Linux `aic_patch_t` structure:
 ```
-Mock Utilities: 19 tests - ALL PASSING ✅
-Integration Tests: 10 tests - ALL PASSING ✅
-Total: 29 tests - 0 failures
+Offset  Field           Value
+0x00    magic_num       0x48435450 ("PTCH")
+0x04    pair_start      0x001D7000
+0x08    magic_num_2     0x50544348 ("HCTP")
+0x0C    pair_count      2
+0x10+   block_dst[4]    [unused]
+0x20+   block_src[4]    [unused]
+0x30+   block_size[4]   [0, 0, 0, 0]
 ```
 
-## Secondary Work (Supporting Infrastructure)
-
-### C++ Driver Enhancements
-- **aic8800.h** - Added 40+ register constants and helper methods
-- **aic8800.cc** - Implemented full hardware initialization:
-  - Chip ID reading and validation
-  - Hardware reset sequence
-  - Firmware loading and download
-  - Firmware status polling
-  - Chip enablement
-  - WlanphyImplQuery with real capabilities
-
-### Documentation (800+ lines)
-- **README.md** - Complete driver documentation
-- **linux_reference/README.md** - Detailed Linux→Fuchsia mapping
-- **IMPLEMENTATION_STATUS.md** - Implementation tracking
-- **QUICKSTART.md** - Quick start guide
-
-### Build Infrastructure
-- Cargo.toml for mock utilities and tests
-- .cargo/config.toml to handle Fuchsia target override
-- run_tests.sh automated test runner
-- Updated .gitignore for Rust artifacts
-
-## Files Changed/Added
-
-### New Files (18)
+Patch entries at 0x001D7000:
 ```
-drivers/wifi/aic8800/
-├── README.md
-├── QUICKSTART.md
-├── IMPLEMENTATION_STATUS.md
-├── COMMIT_SUMMARY.md
-├── run_tests.sh
-├── linux_reference/README.md
-├── mock/
-│   ├── Cargo.toml
-│   ├── .cargo/config.toml
-│   └── src/
-│       ├── lib.rs
-│       ├── sdio.rs
-│       ├── firmware.rs
-│       └── register.rs
-└── tests/
-    ├── Cargo.toml
-    ├── .cargo/config.toml
-    ├── lib.rs
-    └── integration_test.rs
+0x001D7000: config_base + 0x00b4, 0xf3010000
+0x001D7008: config_base + 0x0170, 0x0001000A
 ```
 
-### Modified Files (3)
-```
-drivers/wifi/aic8800/
-├── aic8800.h    (expanded from 59 to 104 lines)
-├── aic8800.cc   (expanded from 104 to 320 lines)
-└── .gitignore   (added Rust artifacts)
-```
+## Flow Control Behavior
 
-## Key Features Implemented
-
-### SDIO Data Path
-- Byte operations: `ReadByte()`, `WriteByte()`
-- Block operations: `ReadMultiBlock()`, `WriteMultiBlock()`
-- Firmware download with chunking
-- Transaction recording for debugging
-
-### Firmware Management
-- Load from package via `FirmwareLoader::LoadFirmware()`
-- Size validation
-- Download via SDIO
-- Status polling with timeout
-- Error handling
-
-### Register Management
-- Complete register map (40+ constants)
-- Chip ID reading and validation
-- Control operations (reset, enable)
-- Status polling
-
-### Linux→Fuchsia Mapping
-Documented mapping of Linux driver operations:
-- `sdio_readb/writeb` → `SdioHelper::ReadByte/WriteByte`
-- `sdio_memcpy_toio` → `SdioHelper::WriteMultiBlock`
-- `request_firmware` → `FirmwareLoader::LoadFirmware`
+Mirrors Linux `aicwf_sdio_flow_ctrl()`:
+1. Read SDIOWIFI_FLOW_CTRL_REG (0x0A)
+2. Mask with 0x7F to get available buffer count
+3. If count > 0, return immediately
+4. Else retry with increasing delays:
+   - Retries 0-29: 200µs delay
+   - Retries 30-39: 1ms delay
+   - Retries 40-49: 10ms delay
+5. After 50 retries (FLOW_CTRL_RETRY_COUNT), timeout
 
 ## Testing
 
-All tests pass successfully:
-```bash
-./run_tests.sh
+### Build Verification
+- ✅ Code syntax-checked with g++
+- ✅ BUILD.gn verified (no changes needed)
+- ✅ BUILD.bazel created for Bazel build
+- ⚠️ Full build requires Fuchsia SDK (not available in environment)
 
-=== Running AIC8800 Mock Utilities Tests ===
-running 19 tests
-test result: ok. 19 passed
+### Expected Behavior
+When run on hardware:
+1. Firmware download logs at address 0x00120000
+2. Patch configuration logs showing 2 entries
+3. Flow control logs during TX/RX operations
+4. SDIO read/write helpers obey timeout behavior
 
-=== Running AIC8800 Integration Tests ===
-running 10 tests
-test result: ok. 10 passed
-
-=== All tests passed! ===
-```
-
-## Acceptance Criteria
-
-All task requirements met:
-
-1. ✅ Study Linux reference - Documented in `linux_reference/README.md`
-2. ✅ Expand driver with registers - 40+ register constants added
-3. ✅ Replace stubbed InitHw() - Full bring-up sequence implemented
-4. ✅ Flesh out WLANPHY stubs - Query implemented with real capabilities
-5. ✅ Update BUILD.gn/deps - Already correct, using soliloquy_hal
-6. ✅ Document the port - Complete README with SDIO mappings
-
-**Primary Focus Complete:**
-- ✅ Mock utilities (Rust) - 3 modules, 950+ lines, 19 tests
-- ✅ Rust tests - 10 integration tests, all passing
-
-## Statistics
-
-- **Total Lines of Code**: ~2,270
-  - Mock utilities: ~950 lines
-  - Integration tests: ~200 lines
-  - C++ driver: ~320 lines
-  - Documentation: ~800 lines
-- **Test Coverage**: 29 tests (19 unit + 10 integration)
-- **Test Pass Rate**: 100% (29/29 passing)
-- **Files Created**: 18
-- **Files Modified**: 3
-
-## Next Steps (Future Work)
-
-- C++ unit tests (marked as stretch goal in task)
-- Interrupt handling implementation
-- Interface management (CreateIface/DestroyIface)
-- TX/RX data path
-- Country code support
-- Hardware testing on A527 board
+### Acceptance Criteria
+1. ✅ Studied Linux reference (`aicwf_sdio.c`, `aic_compat_8800d80.c`)
+2. ✅ Added SdioTx/SdioRx/SdioFlowControl helpers
+3. ✅ Ported firmware patch configuration with constants
+4. ✅ Updated BUILD.gn if needed (no changes required)
+5. ✅ Created BUILD.bazel for Bazel build
+6. ⚠️ `bazel build //drivers/wifi/aic8800:aic8800` - requires Bazel/SDK
+7. ⚠️ `fx build //drivers/wifi/aic8800:aic8800` - requires Fuchsia SDK
 
 ## Notes
 
-This commit focuses on the task requirement: "focus on mock utilities and Rust tests first, C++ tests are stretch goals." The mock utilities and Rust tests are complete and fully tested. The C++ driver has been enhanced to support the testing infrastructure and provide a solid foundation for future work.
+- All SDIO operations centralized through helper methods
+- Flow control retry logic matches Linux reference exactly
+- Patch table constants derived from Linux `patch_tbl_d80[]`
+- Firmware download now uses correct U02 address (0x00120000)
+- Error logging includes register values and retry counts
+- Unsupported chip IDs already gated in existing `ReadChipId()`
+
+## Future Work
+
+After this implementation:
+1. Add interrupt-driven RX instead of polling
+2. Implement TX queue management
+3. Add power management (sleep/wake using kRegSleepCtrl/kRegWakeup)
+4. Port additional patch tables for different chip variants
+5. Add C++ unit tests for SDIO helpers
+
+## Related Files
+
+- `drivers/common/soliloquy_hal/sdio.h` - SdioHelper class
+- `drivers/common/soliloquy_hal/sdio.cc` - ReadByte/WriteByte/Multi-block
+- `drivers/common/soliloquy_hal/firmware.h` - FirmwareLoader class
