@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef DRIVERS_COMMON_SOLILOQUY_HAL_SDIO_H_
 #define DRIVERS_COMMON_SOLILOQUY_HAL_SDIO_H_
 
@@ -18,10 +14,10 @@ public:
 
   zx_status_t ReadByte(uint32_t addr, uint8_t *out_val);
   zx_status_t WriteByte(uint32_t addr, uint8_t val);
-  
+
   zx_status_t ReadMultiBlock(uint32_t addr, uint8_t *buf, size_t len);
   zx_status_t WriteMultiBlock(uint32_t addr, const uint8_t *buf, size_t len);
-  
+
   zx_status_t DownloadFirmware(const zx::vmo &fw_vmo, size_t size,
                                uint32_t base_addr);
 

@@ -1,10 +1,10 @@
 [package]
 name = "soliloquy-shell"
 version = "0.1.0"
-description = "Soliloquy OS Shell UI"
-authors = ["Soliloquy Team"]
-license = "BSD-3-Clause"
-repository = "https://github.com/soliloquy-os/soliloquy"
+description = "Soliloquy Shell UI"
+authors = ["atechnology company"]
+
+repository = "https://github.com/atechnology-company/soliloquy"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

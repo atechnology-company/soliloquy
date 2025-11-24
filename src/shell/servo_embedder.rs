@@ -1,8 +1,4 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-//! Servo embedder for Soliloquy OS
+//! Servo embedder for Soliloquy
 //! 
 //! This module provides the integration layer between Servo and Zircon,
 //! implementing the necessary traits for windowing, events, and graphics.
@@ -16,7 +12,7 @@ use crate::v8_runtime::V8Runtime;
 
 /// Main embedder context that bridges Servo browser engine with Zircon/Fuchsia.
 ///
-/// `ServoEmbedder` manages the lifecycle of a web browser instance running on Soliloquy OS.
+/// `ServoEmbedder` manages the lifecycle of a web browser instance running on Soliloquy.
 /// It coordinates between:
 /// - Flatland compositor for GPU-accelerated graphics presentation
 /// - V8 JavaScript runtime for script execution

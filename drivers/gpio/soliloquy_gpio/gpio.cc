@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include "gpio.h"
 
 #include <lib/ddk/debug.h>
@@ -43,9 +39,9 @@ void SoliloquyGpio::DdkRelease() { delete this; }
 zx_status_t SoliloquyGpio::InitHw() {
   zxlogf(INFO, "soliloquy-gpio: Initializing GPIO controller...");
 
-  zx_status_t status = ddk::MmioBuffer::Create(
-      kGpioBaseAddr, kGpioMmioSize, zx::resource(),
-      ZX_CACHE_POLICY_UNCACHED_DEVICE, &gpio_mmio_);
+  zx_status_t status =
+      ddk::MmioBuffer::Create(kGpioBaseAddr, kGpioMmioSize, zx::resource(),
+                              ZX_CACHE_POLICY_UNCACHED_DEVICE, &gpio_mmio_);
 
   if (status != ZX_OK) {
     zxlogf(ERROR, "soliloquy-gpio: Failed to map GPIO MMIO: %s",
@@ -53,7 +49,8 @@ zx_status_t SoliloquyGpio::InitHw() {
     return status;
   }
 
-  mmio_helper_ = std::make_unique<soliloquy_hal::MmioHelper>(&gpio_mmio_.value());
+  mmio_helper_ =
+      std::make_unique<soliloquy_hal::MmioHelper>(&gpio_mmio_.value());
 
   zxlogf(INFO, "soliloquy-gpio: GPIO controller initialized");
   return ZX_OK;
@@ -65,10 +62,10 @@ zx_status_t SoliloquyGpio::GpioConfigIn(uint32_t flags) {
   }
 
   mmio_helper_->ClearBits32(kGpioDirReg, 1);
-  
+
   constexpr uint32_t GPIO_PULL_UP = 0x1;
   constexpr uint32_t GPIO_PULL_DOWN = 0x2;
-  
+
   if (flags & GPIO_PULL_UP) {
     mmio_helper_->SetBits32(kGpioPullReg, 0x1);
   } else if (flags & GPIO_PULL_DOWN) {
@@ -87,7 +84,7 @@ zx_status_t SoliloquyGpio::GpioConfigOut(uint8_t initial_value) {
   }
 
   mmio_helper_->SetBits32(kGpioDirReg, 1);
-  
+
   if (initial_value) {
     mmio_helper_->SetBits32(kGpioDataReg, 1);
   } else {
@@ -110,7 +107,7 @@ zx_status_t SoliloquyGpio::GpioRead(uint8_t *out_value) {
 
   uint32_t val = mmio_helper_->Read32(kGpioDataReg);
   *out_value = (val & 1) ? 1 : 0;
-  
+
   return ZX_OK;
 }
 

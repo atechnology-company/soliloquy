@@ -1,6 +1,6 @@
 # Soliloquy Test Framework
 
-This directory contains the unified test framework for Soliloquy OS.
+This directory contains the unified test framework for Soliloquy.
 
 ## Directory Structure
 

@@ -1,8 +1,4 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-//! Zircon windowing implementation for Soliloquy OS.
+//! Zircon windowing implementation for Soliloquy.
 //!
 //! This module provides the window abstraction layer between Servo and
 //! Fuchsia's graphics stack (Flatland compositor + Magma/Vulkan).
@@ -13,6 +9,8 @@
 //! - Magma driver for Vulkan-based rendering
 //!
 //! Non-Fuchsia builds provide a minimal placeholder for development/testing.
+// This file will contain the implementation of the windowing system for Zircon.
+// It needs to interface with Magma (Vulkan) and potentially Flatland/Scenic.
 
 #[cfg(feature = "fuchsia")]
 use fidl_fuchsia_ui_composition as flatland;

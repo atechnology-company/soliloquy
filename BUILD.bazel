@@ -1,4 +1,4 @@
-# Root BUILD file for Soliloquy OS
+# Root BUILD file for Soliloquy
 
 package(default_visibility = ["//visibility:public"])
 

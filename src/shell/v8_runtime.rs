@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 //! V8 Runtime helper for Soliloquy Shell
 //! 
 //! This module provides a thin wrapper around rusty_v8 to simplify

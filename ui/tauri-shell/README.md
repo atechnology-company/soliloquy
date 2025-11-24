@@ -1,6 +1,6 @@
 # Soliloquy Shell UI
 
-A Tauri + Svelte application that prototypes the Soliloquy OS shell interface. This UI mockup demonstrates the desktop environment design and user experience concepts for the Soliloquy operating system.
+A Tauri + Svelte application that prototypes the Soliloquy shell interface. This UI mockup demonstrates the desktop environment design and user experience concepts for the Soliloquy operating system.
 
 ## Overview
 
@@ -19,11 +19,11 @@ The Soliloquy Shell UI is a prototype that shows how the web-native desktop envi
 - **Launcher Grid**: Application launcher with icon-based navigation
 - **Webview Placeholder**: Mock area showing where Servo-rendered content will appear
 - **Responsive Design**: Adapts to different window sizes
-- **Dark Theme**: Consistent with the Soliloquy OS design language
+- **Dark Theme**: Consistent with the Soliloquy design language
 
 ### Production Vision
 
-In the actual Soliloquy OS, this UI will be rendered by:
+In the actual Soliloquy, this UI will be rendered by:
 
 - **Servo Browser Engine**: Replaces Tauri's webview
 - **WebRender + Vulkan**: Hardware-accelerated graphics via Mali-G57
@@ -131,7 +131,7 @@ npm run tauri:build
 1. **Phase 1** (Current): Tauri prototype for design validation
 2. **Phase 2**: Port components to run in Servo
 3. **Phase 3**: Integration with Zircon system services
-4. **Phase 4**: Production deployment on Soliloquy OS
+4. **Phase 4**: Production deployment on Soliloquy
 
 ## Contributing
 
@@ -142,7 +142,3 @@ When contributing to the UI:
 3. Test with different window sizes
 4. Consider accessibility (keyboard navigation, screen readers)
 5. Keep performance in mind for target hardware (Radxa Cubie A5E)
-
-## License
-
-BSD-3-Clause (same as the main Soliloquy project)

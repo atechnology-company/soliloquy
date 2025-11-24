@@ -1,6 +1,6 @@
 # Servo Integration Documentation
 
-This document describes the integration of the Servo browser engine with V8 JavaScript runtime in Soliloquy OS.
+This document describes the integration of the Servo browser engine with V8 JavaScript runtime in Soliloquy.
 
 ## Overview
 

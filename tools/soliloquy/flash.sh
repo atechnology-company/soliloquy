@@ -1,5 +1,5 @@
 #!/bin/bash
-# flash.sh - Flash Soliloquy OS to SD Card
+# flash.sh - Flash Soliloquy to SD Card
 
 set -e
 
@@ -13,7 +13,7 @@ if [ ! -f "$IMAGE_PATH" ]; then
     exit 1
 fi
 
-echo "=== Flashing Soliloquy OS ==="
+echo "=== Flashing Soliloquy ==="
 echo "Image: $IMAGE_PATH"
 echo "Waiting for device in fastboot mode..."
 

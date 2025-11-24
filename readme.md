@@ -1,4 +1,4 @@
-# Soliloquy OS
+# Soliloquy
 
 A minimal, web-native operating system built on the Zircon microkernel with Servo as the desktop environment.
 
@@ -180,46 +180,6 @@ The Soliloquy shell UI is prototyped using Tauri + Svelte for rapid development 
 cd ui/tauri-shell && npm install && npm run tauri:dev
 ```
 
-**UI Stack:**
-- **Prototype**: Tauri + Svelte (for development)
-- **Production**: Servo + WebRender + V8 (in the actual OS)
-- **Design**: Svelte-based web UI (Plates vision)
-
-The UI prototype demonstrates:
-- Desktop shell interface with status bar and launcher
-- Web application rendering area (placeholder for Servo)
-- System integration patterns for the web-native OS
-
-### When to Use the UI Scaffold
-
-**Use the Tauri UI prototype when:**
-
-1. **UI/UX Design Phase**: Prototype and iterate on the desktop interface before implementing in Servo
-2. **Component Development**: Build and test individual UI components in isolation
-3. **User Testing**: Gather feedback on the desktop experience and interaction patterns
-4. **Design Reviews**: Generate screenshots and demos for stakeholders
-5. **Integration Testing**: Test web application compatibility with the shell interface
-
-**Development Workflow:**
-```bash
-# Quick development iteration
-./tools/soliloquy/dev_ui.sh
-
-# Build for screenshots/demos
-./tools/soliloquy/build_ui.sh
-
-# Serve built files for review
-cd ui/tauri-shell && npx serve build -p 3000
-```
-
-**Integration Path to Production:**
-1. **Phase 1**: Tauri prototype (current) - Design validation and user testing
-2. **Phase 2**: Port components to run in Servo browser engine
-3. **Phase 3**: Integration with Zircon system services and FIDL
-4. **Phase 4**: Full production deployment on Soliloquy OS with Servo runtime
-
-All build scripts support `--help` for detailed usage information.
-
 ## Architecture
 
 ### Component Stack
@@ -238,28 +198,34 @@ All build scripts support `--help` for detailed usage information.
          │
          ▼
 ┌─────────────────────────────────┐
+│      Soliloquy HAL              │
+│  ┌──────┐ ┌──────┐ ┌────────┐  │
+│  │ MMIO │ │ SDIO │ │Firmware│  │
+│  └──────┘ └──────┘ └────────┘  │
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│   Drivers (WiFi, GPIO, etc.)    │
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
 │   Zircon Microkernel            │
 └─────────────────────────────────┘
 ```
 
-### Desktop Environment
-
-Servo runs as a Fuchsia component, providing:
-- Window management via Flatland
-- Web-based UI rendering
-- JavaScript execution (V8)
-- Hardware-accelerated graphics (Vulkan/Mali)
-
 ## Contributing
 
-This is an experimental project. Contributions welcome!
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
-### Development Workflow
+### Quick Contribution Guide
 
-1. Create feature branch
-2. Make changes
-3. Test with `bazel build //...`
-4. Submit PR
+1. Fork and clone
+2. Create feature branch
+3. Make changes with tests
+4. Run `bazel test //...`
+5. Submit PR
 
 ## Documentation
 
@@ -271,10 +237,18 @@ This is an experimental project. Contributions welcome!
 - [Servo Integration](docs/servo_integration.md)
 - [Implementation Plan](docs/implementation_plan.md)
 - [Development Walkthrough](docs/walkthrough.md)
+- [Architecture](docs/ARCHITECTURE.md) - System design and components
+- [Testing Guide](docs/TESTING.md) - How to write and run tests
+- [Contributing](CONTRIBUTING.md) - Development guidelines
 
-## License
+## Recent Updates
 
-BSD-3-Clause (see LICENSE file)
+**Latest PRs:**
+- PR #5: Tauri UI scaffold
+- PR #4: macOS build stabilization
+- PR #3: fx tooling hardening
+- PR #2: V8 runtime integration
+- PR #1: Soliloquy HAL + GPIO driver
 
 ## Acknowledgments
 

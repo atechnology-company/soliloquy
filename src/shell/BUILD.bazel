@@ -20,20 +20,21 @@ rust_binary(
     edition = "2021",
 )
 
-# Full shell with Fuchsia dependencies and V8 integration
+# Full shell with Fuchsia dependencies (WIP)
 rust_binary(
     name = "soliloquy_shell",
     srcs = [
         "main.rs",
         "zircon_window.rs",
         "servo_embedder.rs",
-        "v8_runtime.rs",
     ],
     edition = "2021",
     deps = [
         "//gen/fidl/fuchsia_ui_composition",
         "//gen/fidl/fuchsia_ui_views",
         "//gen/fidl/fuchsia_input",
+        "//vendor/servo:servo_mock",
+        # TODO: Add Fuchsia SDK dependencies
         # TODO: Add rusty_v8 dependency via cargo
         # TODO: Add Servo dependency
     ],

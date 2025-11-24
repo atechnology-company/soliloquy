@@ -1,10 +1,10 @@
 #!/bin/bash
-# setup.sh - Soliloquy OS Environment Setup
+# setup.sh - Soliloquy Environment Setup
 # Supports Linux (Debian/Ubuntu/RHEL/Fedora) and macOS
 
 set -e
 
-echo "=== Soliloquy OS Setup ==="
+echo "=== Soliloquy Setup ==="
 
 # Detect OS
 OS=$(uname -s)

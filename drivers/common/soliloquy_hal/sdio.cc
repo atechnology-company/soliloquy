@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include "sdio.h"
 
 #include <lib/ddk/debug.h>
@@ -79,7 +75,8 @@ zx_status_t SdioHelper::DownloadFirmware(const zx::vmo &fw_vmo, size_t size,
     return ZX_ERR_INVALID_ARGS;
   }
 
-  zxlogf(INFO, "soliloquy_hal: Downloading firmware via SDIO (%zu bytes to 0x%x)",
+  zxlogf(INFO,
+         "soliloquy_hal: Downloading firmware via SDIO (%zu bytes to 0x%x)",
          size, base_addr);
 
   zx_vaddr_t mapped_addr;

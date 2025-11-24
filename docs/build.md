@@ -1,6 +1,6 @@
 # Soliloquy Build System Guide
 
-This guide covers the different build methods available for Soliloquy OS and helps you choose the right approach for your development environment.
+This guide covers the different build methods available for Soliloquy and helps you choose the right approach for your development environment.
 
 ## Build Method Decision Tree
 
@@ -33,7 +33,7 @@ Are you on macOS?
 
 **Pros:**
 - Complete access to Fuchsia build system
-- Full Soliloquy OS with all components
+- Full Soliloquy with all components
 - Supports custom products and boards
 - Native development experience
 

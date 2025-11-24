@@ -1,4 +1,4 @@
-# Soliloquy OS - Bazel Module
+# Soliloquy - Bazel Module
 
 module(
     name = "soliloquy",

@@ -34,7 +34,7 @@
             <div class="webview-text">
                 <h3 class="text-lg font-semibold text-gray-200 mb-2">Servo Webview</h3>
                 <p class="text-sm text-gray-400 mb-4 text-center max-w-md">
-                    This area will display the Servo-rendered web content. In the full Soliloquy OS, 
+                    This area will display the Servo-rendered web content. In the full Soliloquy, 
                     this would show web applications and the desktop environment.
                 </p>
                 

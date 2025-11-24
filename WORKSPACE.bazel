@@ -1,4 +1,4 @@
-# Soliloquy OS - Bazel Workspace
+# Soliloquy - Bazel Workspace
 
 workspace(name = "soliloquy")
 

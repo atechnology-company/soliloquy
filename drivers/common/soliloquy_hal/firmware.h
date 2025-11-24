@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef DRIVERS_COMMON_SOLILOQUY_HAL_FIRMWARE_H_
 #define DRIVERS_COMMON_SOLILOQUY_HAL_FIRMWARE_H_
 
@@ -14,7 +10,7 @@ class FirmwareLoader {
 public:
   static zx_status_t LoadFirmware(zx_device_t *parent, const char *name,
                                   zx::vmo *out_vmo, size_t *out_size);
-  
+
   static zx_status_t MapFirmware(const zx::vmo &vmo, size_t size,
                                  uint8_t **out_data);
 };

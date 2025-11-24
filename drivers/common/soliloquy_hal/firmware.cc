@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include "firmware.h"
 
 #include <lib/ddk/debug.h>
@@ -16,9 +12,8 @@ zx_status_t FirmwareLoader::LoadFirmware(zx_device_t *parent, const char *name,
     return ZX_ERR_INVALID_ARGS;
   }
 
-  zx_status_t status = load_firmware(parent, name,
-                                     out_vmo->reset_and_get_address(),
-                                     out_size);
+  zx_status_t status =
+      load_firmware(parent, name, out_vmo->reset_and_get_address(), out_size);
   if (status != ZX_OK) {
     zxlogf(ERROR, "soliloquy_hal: Failed to load firmware '%s': %s", name,
            zx_status_get_string(status));

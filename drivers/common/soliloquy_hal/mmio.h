@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef DRIVERS_COMMON_SOLILOQUY_HAL_MMIO_H_
 #define DRIVERS_COMMON_SOLILOQUY_HAL_MMIO_H_
 
@@ -16,11 +12,11 @@ public:
 
   uint32_t Read32(uint32_t offset);
   void Write32(uint32_t offset, uint32_t value);
-  
+
   void SetBits32(uint32_t offset, uint32_t mask);
   void ClearBits32(uint32_t offset, uint32_t mask);
   void ModifyBits32(uint32_t offset, uint32_t mask, uint32_t value);
-  
+
   uint32_t ReadMasked32(uint32_t offset, uint32_t mask, uint32_t shift);
   void WriteMasked32(uint32_t offset, uint32_t mask, uint32_t shift,
                      uint32_t value);

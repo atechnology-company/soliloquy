@@ -197,10 +197,6 @@ EOF
     
     # Create BUILD.gn
     cat > "$crate_dir/BUILD.gn" <<EOF
-# Copyright 2025 The Soliloquy Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 import("//build/rust/rustc_library.gni")
 
 rustc_library("$crate_name") {
@@ -241,10 +237,6 @@ done
 
 # Create top-level BUILD.gn
 cat > "$GEN_DIR/BUILD.gn" <<'EOF'
-# Copyright 2025 The Soliloquy Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 # Top-level build file for generated FIDL bindings
 
 group("fidl_bindings") {

@@ -1,10 +1,10 @@
 # Driver Porting Guide
 
-This guide walks through porting a Linux device driver to Soliloquy OS. We'll cover the key differences between Linux and Zircon driver models, how to leverage the Soliloquy HAL, and common pitfalls to avoid.
+This guide walks through porting a Linux device driver to Soliloquy. We'll cover the key differences between Linux and Zircon driver models, how to leverage the Soliloquy HAL, and common pitfalls to avoid.
 
 ## Overview
 
-Soliloquy OS uses the **Zircon Driver Development Kit (DDK)** instead of Linux's kernel driver API. While the core hardware interaction concepts remain the same, the APIs, initialization patterns, and lifecycle management differ significantly.
+Soliloquy uses the **Zircon Driver Development Kit (DDK)** instead of Linux's kernel driver API. While the core hardware interaction concepts remain the same, the APIs, initialization patterns, and lifecycle management differ significantly.
 
 ### Key Differences: Linux vs Zircon
 

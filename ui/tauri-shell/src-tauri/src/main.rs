@@ -10,7 +10,7 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn get_soliloquy_info() -> serde_json::Value {
     serde_json::json!({
-        "name": "Soliloquy OS",
+        "name": "Soliloquy",
         "version": "0.1.0",
         "kernel": "Zircon",
         "browser_engine": "Servo",

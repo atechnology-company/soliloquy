@@ -1,5 +1,5 @@
 #!/bin/bash
-# build.sh - Build Soliloquy OS
+# build.sh - Build Soliloquy
 # Usage: ./tools/soliloquy/build.sh [--product PRODUCT] [--board BOARD] [--extra-args ARGS]
 
 set -e
@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "Usage: $0 [--product PRODUCT] [--board BOARD] [--extra-args ARGS]"
             echo ""
-            echo "Build Soliloquy OS with configurable product and board."
+            echo "Build Soliloquy with configurable product and board."
             echo ""
             echo "Options:"
             echo "  --product PRODUCT     Product to build (default: $DEFAULT_PRODUCT)"
@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-log_info "=== Soliloquy OS Build ==="
+log_info "=== Soliloquy Build ==="
 log_info "Product: $PRODUCT"
 log_info "Board: $BOARD"
 

@@ -1,7 +1,3 @@
-// Copyright 2025 The Soliloquy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef DRIVERS_GPIO_SOLILOQUY_GPIO_GPIO_H_
 #define DRIVERS_GPIO_SOLILOQUY_GPIO_GPIO_H_
 
@@ -19,8 +15,9 @@ class SoliloquyGpio;
 using SoliloquyGpioType =
     ddk::Device<SoliloquyGpio, ddk::Initializable, ddk::Unbindable>;
 
-class SoliloquyGpio : public SoliloquyGpioType,
-                      public ddk::GpioProtocol<SoliloquyGpio, ddk::base_protocol> {
+class SoliloquyGpio
+    : public SoliloquyGpioType,
+      public ddk::GpioProtocol<SoliloquyGpio, ddk::base_protocol> {
 public:
   explicit SoliloquyGpio(zx_device_t *parent);
   virtual ~SoliloquyGpio();
@@ -42,13 +39,13 @@ public:
 
 private:
   zx_status_t InitHw();
-  
+
   std::optional<ddk::MmioBuffer> gpio_mmio_;
   std::unique_ptr<soliloquy_hal::MmioHelper> mmio_helper_;
 
   static constexpr uint32_t kGpioBaseAddr = 0x01C20800;
   static constexpr size_t kGpioMmioSize = 0x400;
-  
+
   static constexpr uint32_t kGpioDataReg = 0x10;
   static constexpr uint32_t kGpioDirReg = 0x00;
   static constexpr uint32_t kGpioPullReg = 0x1C;
