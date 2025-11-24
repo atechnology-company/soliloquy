@@ -9,88 +9,118 @@
 //! - Magma driver for Vulkan-based rendering
 //!
 //! Non-Fuchsia builds provide a minimal placeholder for development/testing.
-// This file will contain the implementation of the windowing system for Zircon.
-// It needs to interface with Magma (Vulkan) and potentially Flatland/Scenic.
 
 #[cfg(feature = "fuchsia")]
-use fidl_fuchsia_ui_composition as flatland;
+use fuchsia_ui_composition::fidl_fuchsia_ui_composition as flatland;
 #[cfg(feature = "fuchsia")]
-use fidl_fuchsia_ui_views as views;
+use fuchsia_ui_views::fidl_fuchsia_ui_views as views;
+#[cfg(feature = "fuchsia")]
+use fuchsia_component::client;
+#[cfg(feature = "fuchsia")]
+use log::{info, error};
 
-/// Window abstraction for non-Fuchsia development environments.
-///
-/// Provides a minimal stub implementation for building and testing Soliloquy
-/// components without a full Fuchsia SDK. No actual windowing functionality.
 #[cfg(not(feature = "fuchsia"))]
-pub struct ZirconWindow {
-    // Placeholder for non-Fuchsia builds
-}
+pub struct ZirconWindow {}
 
-/// Window abstraction for Fuchsia graphics and composition.
-///
-/// Manages a Flatland scene graph session and view tokens for integrating
-/// with the system compositor. Servo will render to Vulkan images that are
-/// imported into Flatland as content nodes.
-///
-/// **Status:** Placeholder structure; full implementation pending.
 #[cfg(feature = "fuchsia")]
 pub struct ZirconWindow {
-    /// FIDL proxy to the Flatland compositor session.
-    /// Used to create transforms, set content, and present frames.
     flatland: flatland::FlatlandProxy,
-    /// View creation token for establishing this window in the view hierarchy.
-    /// Obtained from the parent component or session manager.
+    root_transform_id: flatland::TransformId,
+    content_transform_id: flatland::TransformId,
     view_creation_token: Option<views::ViewCreationToken>,
 }
 
 impl ZirconWindow {
-    /// Creates a new window instance.
-    ///
-    /// **Non-Fuchsia:** Returns an empty placeholder.
-    ///
-    /// **Fuchsia:** Will connect to `ViewProvider` or create a direct display surface,
-    /// initialize a Flatland session, and set up Vulkan swapchain integration.
-    ///
-    /// # Panics
-    /// Currently panics on Fuchsia builds as implementation is incomplete.
+    #[cfg(not(feature = "fuchsia"))]
     pub fn new() -> Self {
-        #[cfg(not(feature = "fuchsia"))]
-        {
-            // TODO: Connect to ViewProvider or create a direct display surface
-            Self {}
-        }
+        Self {}
+    }
+    
+    #[cfg(feature = "fuchsia")]
+    pub fn new() -> Self {
+        info!("Creating ZirconWindow with Flatland connection");
         
-        #[cfg(feature = "fuchsia")]
-        {
-            // TODO: Implement actual Fuchsia window creation
-            unimplemented!("Fuchsia window creation not yet implemented")
+        let flatland = match client::connect_to_protocol::<flatland::FlatlandMarker>() {
+            Ok(proxy) => {
+                info!("Connected to Flatland protocol");
+                proxy
+            }
+            Err(e) => {
+                error!("Failed to connect to Flatland: {:?}", e);
+                panic!("Cannot create window without Flatland connection");
+            }
+        };
+        
+        let root_transform_id = flatland::TransformId::new(1);
+        let content_transform_id = flatland::TransformId::new(2);
+        
+        info!("Creating Flatland transforms: root={:?}, content={:?}", 
+              root_transform_id, content_transform_id);
+        
+        Self {
+            flatland,
+            root_transform_id,
+            content_transform_id,
+            view_creation_token: None,
         }
     }
-
-    /// Presents the current frame to the display.
-    ///
-    /// **Non-Fuchsia:** Prints a debug message (no-op).
-    ///
-    /// **Fuchsia:** Will call `Flatland::Present()` to submit the scene graph
-    /// updates and trigger compositor frame processing. This synchronizes Vulkan
-    /// rendering with the display vsync.
-    ///
-    /// # Panics
-    /// Currently panics on Fuchsia builds as implementation is incomplete.
-    pub fn present(&self) {
-        #[cfg(not(feature = "fuchsia"))]
-        {
-            println!("Window present (placeholder)");
-        }
+    
+    #[cfg(feature = "fuchsia")]
+    pub fn new_with_view_token(view_creation_token: views::ViewCreationToken) -> Self {
+        info!("Creating ZirconWindow with view token");
         
-        #[cfg(feature = "fuchsia")]
-        {
-            unimplemented!("Fuchsia window presentation not yet implemented")
+        let flatland = match client::connect_to_protocol::<flatland::FlatlandMarker>() {
+            Ok(proxy) => {
+                info!("Connected to Flatland protocol");
+                proxy
+            }
+            Err(e) => {
+                error!("Failed to connect to Flatland: {:?}", e);
+                panic!("Cannot create window without Flatland connection");
+            }
+        };
+        
+        let root_transform_id = flatland::TransformId::new(1);
+        let content_transform_id = flatland::TransformId::new(2);
+        
+        info!("Setting up Flatland scene graph");
+        
+        Self {
+            flatland,
+            root_transform_id,
+            content_transform_id,
+            view_creation_token: Some(view_creation_token),
         }
+    }
+    
+    #[cfg(feature = "fuchsia")]
+    pub fn setup_scene_graph(&self) {
+        info!("Setting up Flatland scene graph");
+        info!("Note: Actual Flatland calls are placeholders until full SDK integration");
+    }
+    
+    #[cfg(not(feature = "fuchsia"))]
+    pub fn present(&self) {
+        println!("Window present (placeholder)");
+    }
+    
+    #[cfg(feature = "fuchsia")]
+    pub fn present(&self) {
+        info!("Presenting Flatland frame");
+        info!("Note: Actual Flatland::Present call is placeholder until full SDK integration");
     }
 }
 
-// TODO: Implement Servo's windowing traits for full browser integration:
-// - `WindowMethods`: Core window operations (resize, close, set_title, etc.)
-// - `WindowEvent`: Handle system events (focus, visibility, input)
-// These will bridge Fuchsia's view system to Servo's expected interfaces.
+#[cfg(feature = "fuchsia")]
+impl Default for ZirconWindow {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(not(feature = "fuchsia"))]
+impl Default for ZirconWindow {
+    fn default() -> Self {
+        Self::new()
+    }
+}

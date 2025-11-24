@@ -20,10 +20,11 @@ name = "v8_test"
 path = "v8_test.rs"
 
 [dependencies]
-# Fuchsia dependencies (commented out for initial testing)
-# fuchsia-async = { path = "../../../fuchsia/fuchsia/src/lib/fuchsia-async" }
-# fuchsia-component = { path = "../../../fuchsia/fuchsia/src/lib/fuchsia-component" }
-# syslog = { path = "../../../fuchsia/fuchsia/src/lib/syslog/rust" }
+# Fuchsia dependencies
+fuchsia-async = { path = "../../third_party/fuchsia-sdk-rust/fuchsia-async" }
+fuchsia-component = { path = "../../third_party/fuchsia-sdk-rust/fuchsia-component" }
+fuchsia-syslog = { path = "../../third_party/fuchsia-sdk-rust/fuchsia-syslog" }
+fuchsia-zircon = { path = "../../third_party/fuchsia-sdk-rust/fuchsia-zircon" }
 futures = "0.3"
 env_logger = "0.10"
 
@@ -39,7 +40,13 @@ log = "0.4"
 # FIDL dependencies - local generated bindings
 fuchsia_ui_composition = { path = "../../gen/fidl/fuchsia_ui_composition" }
 fuchsia_ui_views = { path = "../../gen/fidl/fuchsia_ui_views" }
+fuchsia_ui_app = { path = "../../gen/fidl/fuchsia_ui_app" }
 fuchsia_input = { path = "../../gen/fidl/fuchsia_input" }
+fidl = { path = "../../third_party/fuchsia-sdk-rust/fidl" }
+
+[features]
+default = []
+fuchsia = []
 
 [dev-dependencies]
 # Test dependencies

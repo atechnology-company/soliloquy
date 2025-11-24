@@ -87,3 +87,34 @@ pub mod client {
         _marker: std::marker::PhantomData<T>,
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Status {
+    Ok = 0,
+    ErrInternal = -1,
+}
+
+#[derive(Debug)]
+pub struct Error;
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FIDL error")
+    }
+}
+
+impl std::error::Error for Error {}
+
+pub struct AsyncChannel;
+
+pub struct ServeInner;
+
+pub trait RequestStream: Sized {
+    type Protocol: endpoints::ProtocolMarker;
+    type ControlHandle;
+    
+    fn from_channel(channel: AsyncChannel) -> Self;
+    fn control_handle(&self) -> Self::ControlHandle;
+    fn into_inner(self) -> (std::sync::Arc<ServeInner>, bool);
+    fn from_inner(inner: std::sync::Arc<ServeInner>, is_terminated: bool) -> Self;
+}

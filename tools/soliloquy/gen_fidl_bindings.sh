@@ -24,6 +24,7 @@ mkdir -p "$GEN_DIR"
 FIDL_LIBS=(
     "fuchsia.ui.composition"
     "fuchsia.ui.views"
+    "fuchsia.ui.app"
     "fuchsia.input"
 )
 
@@ -243,6 +244,7 @@ group("fidl_bindings") {
   deps = [
     "fuchsia_ui_composition",
     "fuchsia_ui_views",
+    "fuchsia_ui_app",
     "fuchsia_input",
   ]
 }
@@ -260,6 +262,7 @@ filegroup(
     srcs = [
         "//gen/fidl/fuchsia_ui_composition",
         "//gen/fidl/fuchsia_ui_views",
+        "//gen/fidl/fuchsia_ui_app",
         "//gen/fidl/fuchsia_input",
     ],
 )
@@ -275,6 +278,7 @@ This directory contains generated Rust bindings for Fuchsia FIDL libraries.
 
 - **fuchsia_ui_composition**: Flatland compositor API for modern UI rendering
 - **fuchsia_ui_views**: View tokens and view provider protocols
+- **fuchsia_ui_app**: ViewProvider service protocol
 - **fuchsia_input**: Input event handling
 
 ## Regeneration

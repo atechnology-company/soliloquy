@@ -19,6 +19,7 @@ rustc_binary("bin") {
     "//third_party/rust_crates:rusty_v8",
     "//gen/fidl/fuchsia_ui_composition",
     "//gen/fidl/fuchsia_ui_views",
+    "//gen/fidl/fuchsia_ui_app",
     "//gen/fidl/fuchsia_input",
     "//vendor/servo", 
   ]
