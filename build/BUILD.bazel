@@ -8,12 +8,14 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "v_compile_tool",
     srcs = ["v_compile.py"],
+    main = "v_compile.py",
     python_version = "PY3",
 )
 
 py_binary(
     name = "v_translate_tool",
     srcs = ["v_translate.py"],
+    main = "v_translate.py",
     python_version = "PY3",
 )
 
