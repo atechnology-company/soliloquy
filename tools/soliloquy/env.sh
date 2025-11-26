@@ -29,7 +29,18 @@ fi
 # Add SDK tools to PATH
 export PATH="$FUCHSIA_DIR/tools:$PATH"
 
+# Set up V toolchain if available
+if [ -f "$PROJECT_ROOT/.build-tools/v/v" ]; then
+    export V_HOME="$PROJECT_ROOT/.build-tools/v"
+    export PATH="$V_HOME:$PATH"
+    V_AVAILABLE="yes (v$(\"$V_HOME/v\" version 2>/dev/null | head -n1))"
+else
+    V_AVAILABLE="not installed (run tools/soliloquy/c2v_pipeline.sh --bootstrap-only)"
+fi
+
 echo "Soliloquy environment set up:"
 echo "  FUCHSIA_DIR=$FUCHSIA_DIR"
 echo "  CLANG_HOST_ARCH=$CLANG_HOST_ARCH"
+echo "  V_HOME=$V_HOME"
+echo "  V toolchain: $V_AVAILABLE"
 echo "  PATH includes $FUCHSIA_DIR/tools"

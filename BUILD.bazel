@@ -10,3 +10,9 @@ filegroup(
         "//drivers/common/soliloquy_hal",
     ],
 )
+
+# c2v tooling smoke test
+alias(
+    name = "c2v_tooling_smoke",
+    actual = "//build:c2v_tooling_smoke",
+)
