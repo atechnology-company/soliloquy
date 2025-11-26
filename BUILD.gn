@@ -9,3 +9,7 @@ group("default") {
     "//boards/arm64/soliloquy:soliloquy-package",
   ]
 }
+
+group("c2v_tooling_smoke") {
+  deps = [ "//build:c2v_tooling_smoke" ]
+}

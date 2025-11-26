@@ -193,7 +193,26 @@ The AIC8800 driver (`drivers/wifi/aic8800/`) demonstrates HAL usage for:
 - SDIO transactions with `SdioHelper`
 - Firmware download to hardware
 
-## 5. Testing
+## 5. c2v Translation (Experimental)
+
+Soliloquy includes experimental tooling for translating Zircon C subsystems to the V programming language using the c2v translator. This is part of a gradual migration effort to improve memory safety.
+
+📖 **For complete c2v workflow documentation, see the [Zircon C-to-V Translation Guide](docs/zircon_c2v.md)** - comprehensive documentation on the translation tooling, workflow, and subsystem priority list.
+
+### Quick Start
+
+```bash
+# Install V toolchain
+./tools/soliloquy/c2v_pipeline.sh --bootstrap-only
+
+# Translate a subsystem (dry-run)
+./tools/soliloquy/c2v_pipeline.sh --subsystem kernel/lib/libc --dry-run
+
+# Run smoke test
+bazel build //:c2v_tooling_smoke
+```
+
+## 6. Testing
 
 Soliloquy uses a comprehensive test framework with unit tests, integration tests, and code coverage.
 
@@ -219,16 +238,17 @@ Soliloquy uses a comprehensive test framework with unit tests, integration tests
 
 See [Testing Guide](docs/testing.md) for detailed documentation.
 
-## 6. Current Status & Roadmap
+## 7. Current Status & Roadmap
 - [x] **Board Config**: Basic GN files for Soliloquy board created.
 - [x] **Driver HAL**: Common hardware abstraction layer (`drivers/common/soliloquy_hal`) for MMIO, SDIO, firmware loading, and clock/reset control.
 - [x] **WiFi Driver**: AIC8800D80 driver refactored to use HAL.
 - [x] **GPIO Driver**: Generic GPIO driver using HAL as reference implementation.
 - [x] **Test Framework**: Unified test support crate with mock FIDL servers and coverage tools.
+- [x] **c2v Tooling**: Experimental C-to-V translation pipeline for Zircon subsystems.
 - [ ] **Servo Integration**: Needs platform abstraction layer for Zircon.
 - [ ] **GPU Driver**: Mali-G57 integration needed (Magma).
 
-## 7. Key Constraints
+## 8. Key Constraints
 - **No POSIX**: Do not assume standard libc/POSIX availability in kernel/driver space.
 - **Async First**: Use Zircon's async loop and FIDL for IPC.
 - **Web Only**: No terminal apps, no X11/Wayland. The "display" is a full-screen browser.
