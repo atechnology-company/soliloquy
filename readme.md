@@ -234,17 +234,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ## Documentation
 
-- [Build System Guide](docs/build.md)
-- [Component Manifest Guide](docs/component_manifest.md)
-- [Servo Integration](docs/servo_integration.md)
-- [Developer Guide](DEVELOPER_GUIDE.md)
-- [Testing Guide](docs/testing.md)
-- [Servo Integration](docs/servo_integration.md)
-- [Implementation Plan](docs/implementation_plan.md)
-- [Development Walkthrough](docs/walkthrough.md)
+📚 **[Complete Documentation Index](docs/INDEX.md)** - All documentation organized by topic
+
+### Quick Links
+- [Developer Guide](docs/dev_guide.md) - Start here for development
 - [Architecture](docs/ARCHITECTURE.md) - System design and components
+- [Build System Guide](docs/build.md) - Building the project
 - [Testing Guide](docs/TESTING.md) - How to write and run tests
-- [Contributing](CONTRIBUTING.md) - Development guidelines
+- [C-to-V Translation](docs/c2v_translations.md) - Zircon subsystem translations
+- [Contributing](docs/contibuting.md) - Development guidelines
 
 ## Recent Updates
 

@@ -1,0 +1,40 @@
+load("//build:v_rules.bzl", "v_object")
+
+package(default_visibility = ["//visibility:public"])
+
+# HAL subsystem V translations
+
+v_object(
+    name = "zircon_v_hal_mmio",
+    srcs = ["hal/mmio.v"],
+    output_name = "hal_mmio",
+)
+
+v_object(
+    name = "zircon_v_hal_sdio",
+    srcs = ["hal/sdio.v"],
+    output_name = "hal_sdio",
+)
+
+v_object(
+    name = "zircon_v_hal_clock_reset",
+    srcs = ["hal/clock_reset.v"],
+    output_name = "hal_clock_reset",
+)
+
+v_object(
+    name = "zircon_v_hal_firmware",
+    srcs = ["hal/firmware.v"],
+    output_name = "hal_firmware",
+)
+
+# Aggregate target for all HAL V objects
+filegroup(
+    name = "zircon_v_hal",
+    srcs = [
+        ":zircon_v_hal_mmio",
+        ":zircon_v_hal_sdio",
+        ":zircon_v_hal_clock_reset",
+        ":zircon_v_hal_firmware",
+    ],
+)

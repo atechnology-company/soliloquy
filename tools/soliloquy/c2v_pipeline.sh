@@ -16,6 +16,7 @@ Bootstrap V toolchain and c2v translator for Zircon subsystem translation.
 
 OPTIONS:
   --subsystem <name>     Target subsystem to translate (required for translate mode)
+  --sources <path>       Source directory to translate (overrides subsystem path)
   --dry-run              Show what would be done without executing
   --out-dir <path>       Output directory for translated files (default: out/c2v)
   --bootstrap-only       Only download and setup V toolchain
@@ -32,8 +33,8 @@ EXAMPLES:
   # Translate a subsystem (dry-run)
   $0 --subsystem kernel/lib/libc --dry-run
 
-  # Translate a subsystem to specific output directory
-  $0 --subsystem kernel/lib/libc --out-dir out/translated
+  # Translate from custom source directory
+  $0 --subsystem hal --sources third_party/zircon_c/hal --out-dir third_party/zircon_v/hal
 
 EOF
   exit 0
@@ -165,8 +166,9 @@ validate_v_home() {
 
 translate_subsystem() {
   local subsystem="$1"
-  local out_dir="$2"
-  local dry_run="$3"
+  local sources_path="$2"
+  local out_dir="$3"
+  local dry_run="$4"
   
   if [ -z "$subsystem" ]; then
     echo "Error: --subsystem is required for translation"
@@ -180,7 +182,12 @@ translate_subsystem() {
   
   mkdir -p "$out_dir"
   
-  SUBSYSTEM_PATH="$PROJECT_ROOT/$subsystem"
+  if [ -n "$sources_path" ]; then
+    SUBSYSTEM_PATH="$PROJECT_ROOT/$sources_path"
+    echo "Source directory: $SUBSYSTEM_PATH"
+  else
+    SUBSYSTEM_PATH="$PROJECT_ROOT/$subsystem"
+  fi
   
   if [ ! -d "$SUBSYSTEM_PATH" ]; then
     echo "Warning: Subsystem path does not exist: $SUBSYSTEM_PATH"
@@ -203,6 +210,7 @@ translate_subsystem() {
 }
 
 SUBSYSTEM=""
+SOURCES_PATH=""
 DRY_RUN=false
 OUT_DIR="$PROJECT_ROOT/out/c2v"
 BOOTSTRAP_ONLY=false
@@ -211,6 +219,10 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --subsystem)
       SUBSYSTEM="$2"
+      shift 2
+      ;;
+    --sources)
+      SOURCES_PATH="$2"
       shift 2
       ;;
     --dry-run)
@@ -243,7 +255,7 @@ if [ "$BOOTSTRAP_ONLY" = "true" ]; then
 fi
 
 if [ -n "$SUBSYSTEM" ]; then
-  translate_subsystem "$SUBSYSTEM" "$OUT_DIR" "$DRY_RUN"
+  translate_subsystem "$SUBSYSTEM" "$SOURCES_PATH" "$OUT_DIR" "$DRY_RUN"
 else
   echo "V toolchain ready. Use --subsystem to translate a subsystem."
   echo "Run with --help for usage information."
