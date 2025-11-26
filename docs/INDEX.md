@@ -1,53 +1,82 @@
 # Soliloquy OS Documentation Index
 
-Welcome to the Soliloquy OS documentation! This index helps you find the information you need.
+Welcome to the Soliloquy OS documentation! This index helps you find the information you need quickly.
 
-## Getting Started
+## 📖 Getting Started
 
 - **[README](../readme.md)** - Project overview and quick start
-- **[Developer Guide](./dev_guide.md)** - Comprehensive development guide
-- **[Getting Started with Testing](./getting_started_with_testing.md)** - How to run and write tests
-- **[Architecture](./ARCHITECTURE.md)** - System architecture overview
-
-## Building and Development
-
 - **[Build Guide](./build.md)** - Building the project (GN, Bazel, Cargo)
-- **[Component Manifest](./component_manifest.md)** - Component structure and manifests
-- **[Driver Porting](./driver_porting.md)** - Porting drivers to Soliloquy
-- **[Contributing](./contibuting.md)** - Contribution guidelines
+- **[Contributing](./contributing.md)** - Contribution guidelines
 
-## Testing
+## 📚 Guides
 
-- **[Testing Overview](./TESTING.md)** - Testing strategy and frameworks
-- **[Testing Guide](./testing.md)** - Detailed testing documentation
-- **[Test Coverage](./test_coverage_broadening.md)** - Expanding test coverage
-- **[Quick Reference Manifest](./QUICK_REFERENCE_MANIFEST.md)** - Test command quick reference
+Comprehensive step-by-step guides for development tasks:
 
-## Special Topics
+- **[Developer Guide](./guides/dev_guide.md)** - Complete development workflow
+- **[Getting Started with Testing](./guides/getting_started_with_testing.md)** - How to run and write tests
+- **[Driver Porting Guide](./guides/driver_porting.md)** - Porting drivers to Soliloquy
+- **[Servo Integration Guide](./guides/servo_integration.md)** - Servo browser engine integration
 
-### Servo Integration
-- **[Servo Integration](./servo_integration.md)** - Servo browser engine integration
+## 🏗️ Architecture
 
-### UI and Graphics
-- **[UI Documentation](./ui/)** - UI framework and FIDL bindings
+System design and component structure documentation:
 
-### C-to-V Translation
-- **[C-to-V Translation Guide](./c2v_translations.md)** - Comprehensive guide to C-to-V translation
-- **[Zircon C2V Workflow](./zircon_c2v.md)** - Detailed c2v workflow and tooling
-- **[C2V Tooling Summary](./C2V_TOOLING_SUMMARY.md)** - Tooling setup and usage
-- **[HAL Translation Summary](./HAL_TRANSLATION_SUMMARY.md)** - HAL subsystem translation details
+- **[System Architecture](./architecture/architecture.md)** - High-level system design
+- **[Component Manifests](./architecture/component_manifest.md)** - Component structure and manifests
+- **[Quick Reference](./architecture/quick_reference_manifest.md)** - Command quick reference
 
-## Subsystem Documentation
+## 🧪 Testing
 
-### Hardware Abstraction Layer (HAL)
-- **Location**: `third_party/zircon_v/hal/`
-- **[HAL README](../third_party/zircon_v/hal/README.md)** - V translation of HAL
-- **[C HAL README](../third_party/zircon_c/hal/README.md)** - Original C++ sources
-- **[HAL Translation Summary](./HAL_TRANSLATION_SUMMARY.md)** - Translation approach and status
+Testing strategies, frameworks, and best practices:
 
-### Virtual Memory (VM)
-- **Location**: `third_party/zircon_v/vm/`
-- **[VM README](../third_party/zircon_v/vm/README.md)** - V translation of VM subsystem
+- **[Testing Guide](./testing/testing.md)** - Comprehensive testing documentation
+- **[Test Coverage Expansion](./testing/test_coverage_broadening.md)** - Expanding test coverage
+
+## 🔄 C-to-V Translation
+
+Documentation for translating Zircon kernel from C to V:
+
+- **[C-to-V Translation Guide](./translations/c2v_translations.md)** - Comprehensive translation guide
+- **[Zircon C2V Workflow](./translations/zircon_c2v.md)** - Detailed workflow and tooling
+- **[C2V Tooling Summary](./translations/C2V_TOOLING_SUMMARY.md)** - Tooling setup and usage
+- **[HAL Translation](./translations/HAL_TRANSLATION_SUMMARY.md)** - HAL subsystem translation
+- **[IPC Translation](./translations/IPC_TRANSLATION_SUMMARY.md)** - IPC subsystem translation
+- **[VM Integration Guide](./translations/VM_INTEGRATION_GUIDE.md)** - Virtual memory subsystem
+- **[VM Translation Files](./translations/VM_TRANSLATION_FILES.md)** - VM translation file listing
+- **[VM Translation Report](./translations/VM_TRANSLATION_REPORT.md)** - VM translation status
+
+## 📊 Project Reports
+
+Historical reports and completion summaries:
+
+- **[Ticket Completion Report](./reports/TICKET_COMPLETION_REPORT.md)** - c2v tooling implementation
+- **[VM Ticket Summary](./reports/TICKET_VM_SUMMARY.md)** - VM subsystem ticket details
+
+## 🎨 UI and Graphics
+
+User interface and graphics subsystem documentation:
+
+- **[Flatland Bindings](./ui/flatland_bindings.md)** - FIDL bindings for Flatland compositor
+- **[Flatland Integration](./ui/flatland_integration.md)** - Integrating with Flatland
+
+## 🎓 Tutorials
+
+Step-by-step tutorials for getting started:
+
+- **[Getting Started](./tutorials/getting_started.md)** - Complete setup and first build tutorial
+
+## 🛠️ Tools & Scripts
+
+Documentation for development tools and utilities:
+
+- **[Tools Reference](./guides/tools_reference.md)** - Complete reference for all Soliloquy tools
+- **[Build Manager](../tools/build_manager/README.md)** - Advanced build management system (GUI + CLI)
+- **[Verification Scripts](../tools/scripts/README.md)** - Setup and subsystem verification tools
+
+## 📦 Build System
+
+- **[Build System Guide](./build.md)** - Comprehensive build documentation (GN, Bazel, Cargo)
+- **[Build Manager](../tools/build_manager/README.md)** - Build management and automation
 - **[C VM README](../third_party/zircon_c/vm/README.md)** - Original C sources
 
 ### Inter-Process Communication (IPC)
@@ -154,7 +183,7 @@ docs/
 ├── component_manifest.md             # Component manifests
 ├── driver_porting.md                 # Driver porting
 ├── servo_integration.md              # Servo integration
-├── contibuting.md                    # Contributing guide
+├── contributing.md                    # Contributing guide
 └── ui/                               # UI documentation
     └── flatland_bindings.md          # FIDL bindings
 ```

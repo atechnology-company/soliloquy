@@ -1,6 +1,11 @@
 #!/bin/bash
 # Verification script for c2v tooling setup
 
+
+# Detect project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
 set -e
 
 echo "========================================"

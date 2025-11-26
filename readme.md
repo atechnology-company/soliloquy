@@ -237,12 +237,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 📚 **[Complete Documentation Index](docs/INDEX.md)** - All documentation organized by topic
 
 ### Quick Links
-- [Developer Guide](docs/dev_guide.md) - Start here for development
-- [Architecture](docs/ARCHITECTURE.md) - System design and components
-- [Build System Guide](docs/build.md) - Building the project
-- [Testing Guide](docs/TESTING.md) - How to write and run tests
-- [C-to-V Translation](docs/c2v_translations.md) - Zircon subsystem translations
-- [Contributing](docs/contibuting.md) - Development guidelines
+- **[Getting Started Tutorial](docs/tutorials/getting_started.md)** - Complete setup guide for new developers
+- **[Developer Guide](docs/guides/dev_guide.md)** - Development workflow and best practices
+- **[Tools Reference](docs/guides/tools_reference.md)** - Complete tool documentation
+- **[Build System Guide](docs/build.md)** - Building the project (GN, Bazel, Cargo)
+- **[Architecture](docs/architecture/architecture.md)** - System design and components
+- **[Testing Guide](docs/testing/testing.md)** - How to write and run tests
+- **[C-to-V Translation](docs/translations/c2v_translations.md)** - Zircon subsystem translations
+- **[Contributing](docs/contributing.md)** - Contribution guidelines
 
 ## Recent Updates
 

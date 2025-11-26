@@ -288,10 +288,312 @@ tools/build_manager/
         └── services/
 ```
 
+## Integration with Soliloquy Tools
+
+The Build Manager integrates with and extends Soliloquy's existing tooling infrastructure:
+
+### Tool Integration
+
+#### Build Scripts (`tools/soliloquy/`)
+The Build Manager provides a unified interface to existing build scripts:
+
+```bash
+# Traditional approach
+./tools/soliloquy/build_sdk.sh
+./tools/soliloquy/build_bazel.sh //src/shell:soliloquy_shell
+
+# Build Manager approach
+soliloquy-build start //src/shell:soliloquy_shell --system bazel
+```
+
+**Integrated Scripts**:
+- `build.sh` - Full Fuchsia build
+- `build_sdk.sh` - SDK-based build
+- `build_bazel.sh` - Bazel component build
+- `build_ui.sh` - UI prototype build
+- `ssh_build.sh` - Remote build
+
+#### Verification Scripts (`tools/scripts/`)
+Run verification scripts directly from Build Manager:
+
+```bash
+# Via CLI
+soliloquy-build verify c2v-setup
+soliloquy-build verify hal-translation
+soliloquy-build verify test-framework
+
+# Via GUI
+Dashboard → Quick Actions → Verification Tools
+```
+
+**Verification Tools**:
+- `verify_c2v_setup.sh` - C2V tooling verification
+- `verify_hal_v_translation.sh` - HAL translation checks
+- `verify_ipc_build.sh` - IPC build verification
+- `verify_test_framework.sh` - Test infrastructure checks
+- `verify_vm_translation.sh` - VM translation verification
+
+#### Development Tools
+Access all Soliloquy development tools through Build Manager:
+
+```bash
+# FIDL binding generation
+soliloquy-build fidl generate fuchsia.ui.composition
+# Wraps: tools/soliloquy/gen_fidl_bindings.sh
+
+# C2V translation
+soliloquy-build c2v translate hal
+# Wraps: tools/soliloquy/c2v_pipeline.sh --subsystem hal
+
+# Component manifest validation
+soliloquy-build validate manifest src/shell/meta/soliloquy_shell.cml
+# Wraps: tools/soliloquy/validate_manifest.sh
+
+# Environment setup
+soliloquy-build env setup
+# Wraps: tools/soliloquy/setup_sdk.sh + env.sh
+```
+
+### Tool Discovery
+
+Build Manager automatically discovers and integrates tools:
+
+```bash
+# List available tools
+soliloquy-build tools list
+
+# Get tool info
+soliloquy-build tools info c2v_pipeline
+
+# Run tool directly
+soliloquy-build tools run c2v_pipeline --subsystem vm --dry-run
+```
+
+### GUI Tool Integration
+
+The Build Manager GUI provides visual interfaces for all tools:
+
+#### Tools Panel
+- **Build Scripts**: One-click execution with parameter forms
+- **Verification**: Batch verification with visual results
+- **C2V Pipeline**: Interactive translation workflow
+- **FIDL Generator**: Library browser and generation UI
+
+#### Dashboard Quick Actions
+- ▶️ Quick Build (common targets)
+- 🔍 Verify Setup (run all verification scripts)
+- 🔄 Update SDK (re-run setup_sdk.sh)
+- 🧪 Run Tests (test.sh wrapper)
+
+#### Tool Output Viewer
+- Real-time streaming output
+- Log filtering and search
+- Error highlighting
+- Copy/export functionality
+
+### Configuration
+
+Configure tool integration in `~/.config/soliloquy-build/config.toml`:
+
+```toml
+[tools]
+# Tool paths (auto-detected if not specified)
+soliloquy_tools_dir = "tools/soliloquy"
+verification_scripts_dir = "tools/scripts"
+
+# Tool execution
+auto_verify_after_setup = true
+save_tool_output = true
+output_log_dir = "~/.cache/soliloquy-build/logs"
+
+# GUI integration
+show_tools_panel = true
+enable_quick_actions = true
+
+[build_wrapper]
+# Wrap existing build scripts
+use_build_manager_for_scripts = false  # Set true to intercept script calls
+log_all_builds = true
+```
+
+### Creating Tool Wrappers
+
+Extend Build Manager to wrap custom tools:
+
+```rust
+// In build_core/src/tools/mod.rs
+
+pub struct ToolWrapper {
+    pub name: String,
+    pub script_path: PathBuf,
+    pub description: String,
+    pub parameters: Vec<ToolParameter>,
+}
+
+impl ToolWrapper {
+    pub fn execute(&self, params: &HashMap<String, String>) -> Result<Output> {
+        // Execute tool script
+        let mut cmd = Command::new(&self.script_path);
+        
+        for (key, value) in params {
+            cmd.arg(format!("--{}", key));
+            cmd.arg(value);
+        }
+        
+        cmd.output()
+    }
+}
+```
+
+### CLI Tool Commands
+
+Extended CLI commands for tool integration:
+
+```bash
+# Verification commands
+soliloquy-build verify all               # Run all verification scripts
+soliloquy-build verify c2v-setup         # Specific verification
+soliloquy-build verify report            # Generate verification report
+
+# Tool execution
+soliloquy-build tools exec <tool> [args] # Execute any tool
+soliloquy-build tools discover           # Discover available tools
+soliloquy-build tools config <tool>      # Configure tool defaults
+
+# Workflow automation
+soliloquy-build workflow create <name>   # Create tool workflow
+soliloquy-build workflow run <name>      # Run predefined workflow
+soliloquy-build workflow list            # List workflows
+
+# Example workflows:
+# - setup: setup_sdk.sh → verify_test_framework.sh
+# - translate: c2v_pipeline.sh → verify_hal_v_translation.sh
+# - release: build_bazel.sh → test.sh → build_ui.sh
+```
+
+### Advanced Tool Features
+
+#### Tool Chains
+Execute multiple tools in sequence:
+
+```bash
+soliloquy-build chain \
+  "c2v translate hal" \
+  "verify hal-translation" \
+  "build //third_party/zircon_v/hal:hal"
+```
+
+#### Parallel Tool Execution
+Run independent tools in parallel:
+
+```bash
+soliloquy-build parallel \
+  "verify c2v-setup" \
+  "verify hal-translation" \
+  "verify vm-translation"
+```
+
+#### Tool Scheduling
+Schedule tool execution:
+
+```bash
+# Run verification nightly
+soliloquy-build schedule \
+  --cron "0 2 * * *" \
+  --command "verify all" \
+  --name "nightly-verification"
+```
+
+### Tool Development
+
+Adding new tools to Build Manager integration:
+
+1. **Create tool script** in `tools/soliloquy/` or `tools/scripts/`
+2. **Add metadata file** (optional): `tool_name.toml`
+   ```toml
+   [tool]
+   name = "my_tool"
+   description = "Custom build tool"
+   category = "build"
+   
+   [[parameters]]
+   name = "input"
+   type = "file"
+   required = true
+   
+   [[parameters]]
+   name = "output"
+   type = "directory"
+   required = false
+   default = "out/"
+   ```
+3. **Build Manager auto-discovers** on next launch
+4. **Use via GUI or CLI** immediately
+
+### Performance Monitoring
+
+Build Manager tracks tool execution metrics:
+
+```bash
+# View tool statistics
+soliloquy-build tools stats
+
+# Output:
+# Tool                    Runs    Avg Time    Success Rate
+# build_bazel.sh         142     45s         98.5%
+# verify_c2v_setup.sh     28     12s         100%
+# c2v_pipeline.sh         15     5m 23s      93.3%
+```
+
+### Tool Dependencies
+
+Build Manager handles tool dependencies automatically:
+
+```yaml
+# tools/build_manager/tool_deps.yaml
+c2v_pipeline:
+  requires:
+    - v_compiler
+    - python3
+  setup: setup_sdk.sh
+  
+build_bazel:
+  requires:
+    - bazel
+    - fuchsia_sdk
+  setup: setup_sdk.sh
+```
+
+---
+
 ## Contributing
 
-See the main project DEVELOPER_GUIDE.md for contribution guidelines.
+See the main project [Contributing Guide](../../docs/contibuting.md) for contribution guidelines.
+
+### Build Manager Development
+
+For Build Manager-specific development:
+
+1. **Core Library**: `build_core/` - Rust library
+2. **CLI Tool**: `build_manager_cli/` - Command-line interface
+3. **GUI App**: `build_manager_gui/` - Tauri application
+
+Run tests:
+```bash
+cd tools/build_manager
+cargo test --all
+```
+
+---
 
 ## License
 
 Same as Soliloquy OS project.
+
+---
+
+## See Also
+
+- **[Tools Reference](../../docs/guides/tools_reference.md)** - Complete tool documentation
+- **[Developer Guide](../../docs/guides/dev_guide.md)** - Development workflow
+- **[Build Guide](../../docs/build.md)** - Build system details
