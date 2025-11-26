@@ -15,3 +15,14 @@ board_driver_package_labels = [
   "//drivers/gpio/soliloquy_gpio:soliloquy_gpio",
   "//drivers/gpu/mali_g57:mali_g57",
 ]
+
+# VM subsystem configuration
+# Set to true to use V-translated VM components instead of C
+use_v_vm = false
+
+# Kernel VM dependencies
+if (use_v_vm) {
+  kernel_vm_deps = [ "//third_party/zircon_v/vm:zircon_v_vm" ]
+} else {
+  kernel_vm_deps = [ "//third_party/zircon_c/vm:zircon_c_vm" ]
+}

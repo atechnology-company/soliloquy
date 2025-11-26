@@ -1,0 +1,7 @@
+load("//build:v_rules.bzl", "v_library")
+
+v_library(
+    name = "zircon_v_vm",
+    srcs = ["zircon_vm.v"],
+    visibility = ["//visibility:public"],
+)
