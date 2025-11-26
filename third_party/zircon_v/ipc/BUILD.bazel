@@ -1,0 +1,44 @@
+load("//build:v_rules.bzl", "v_library", "v_object")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+# V IPC library compiled from translated Zircon sources
+v_library(
+    name = "zircon_v_ipc",
+    srcs = [
+        "handle.v",
+        "message_packet.v",
+        "channel.v",
+    ],
+    visibility = [
+        "//boards/arm64/soliloquy:__pkg__",
+        "//src/shell:__pkg__",
+        "//third_party/zircon_v/ipc/shims:__pkg__",
+    ],
+)
+
+# Rust shim library for FFI to V IPC
+rust_library(
+    name = "zircon_v_ipc_shims",
+    srcs = ["shims/mod.rs"],
+    edition = "2021",
+    deps = [
+        ":zircon_v_ipc",
+    ],
+    visibility = [
+        "//boards/arm64/soliloquy:__pkg__",
+        "//src/shell:__pkg__",
+    ],
+)
+
+# V IPC smoke test
+v_object(
+    name = "ipc_smoke",
+    srcs = ["ipc_smoke.v"],
+    output_name = "ipc_smoke",
+)
+
+# Rust tests for IPC shims
+rust_test(
+    name = "ipc_shims_test",
+    crate = ":zircon_v_ipc_shims",
+)
