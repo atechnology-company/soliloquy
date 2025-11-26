@@ -11,4 +11,7 @@ bazel_dep(name = "rules_rust", version = "0.56.0")
 # C++ rules
 bazel_dep(name = "rules_cc", version = "0.0.16")
 
+# Google Test
+bazel_dep(name = "googletest", version = "1.15.2")
+
 # TODO: Add Fuchsia SDK integration
