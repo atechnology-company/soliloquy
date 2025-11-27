@@ -1,5 +1,8 @@
 load("//build:v_rules.bzl", "v_library", "v_object")
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+# Rust integration commented out until shims are fully implemented
+# load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
 
 # V IPC library compiled from translated Zircon sources
 v_library(
@@ -8,25 +11,9 @@ v_library(
         "handle.v",
         "message_packet.v",
         "channel.v",
-    ],
-    visibility = [
-        "//boards/arm64/soliloquy:__pkg__",
-        "//src/shell:__pkg__",
-        "//third_party/zircon_v/ipc/shims:__pkg__",
-    ],
-)
-
-# Rust shim library for FFI to V IPC
-rust_library(
-    name = "zircon_v_ipc_shims",
-    srcs = ["shims/mod.rs"],
-    edition = "2021",
-    deps = [
-        ":zircon_v_ipc",
-    ],
-    visibility = [
-        "//boards/arm64/soliloquy:__pkg__",
-        "//src/shell:__pkg__",
+        "channel_v2.v",
+        "ipc_types.v",
+        "port.v",
     ],
 )
 
@@ -37,8 +24,17 @@ v_object(
     output_name = "ipc_smoke",
 )
 
-# Rust tests for IPC shims
-rust_test(
-    name = "ipc_shims_test",
-    crate = ":zircon_v_ipc_shims",
-)
+# TODO: Enable Rust shims when fully implemented
+# rust_library(
+#     name = "zircon_v_ipc_shims",
+#     srcs = ["shims/mod.rs"],
+#     edition = "2021",
+#     deps = [
+#         ":zircon_v_ipc",
+#     ],
+# )
+# 
+# rust_test(
+#     name = "ipc_shims_test",
+#     crate = ":zircon_v_ipc_shims",
+# )

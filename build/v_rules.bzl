@@ -3,9 +3,14 @@
 def _v_object_impl(ctx):
     """Implementation of v_object rule"""
     
+    # Try to get V from the toolchain first, fall back to local paths
     v_home = ctx.var.get("V_HOME", "")
     if not v_home:
-        v_home = ctx.workspace_name + "/.build-tools/v"
+        # Check for bzlmod-provided V toolchain
+        if hasattr(ctx.attr, "_v_toolchain") and ctx.attr._v_toolchain:
+            v_home = ctx.files._v_toolchain[0].dirname if ctx.files._v_toolchain else ""
+        if not v_home:
+            v_home = ctx.workspace_name + "/.build-tools/v"
     
     output = ctx.actions.declare_file(ctx.attr.output_name + ".o")
     
@@ -109,7 +114,7 @@ c2v_translate = rule(
     doc = "Translates C sources to V without compiling",
 )
 
-def v_library(name, srcs, translate_from_c = False, v_flags = [], **kwargs):
+def v_library(name, srcs, translate_from_c = False, v_flags = [], deps = [], **kwargs):
     """Build a V library
     
     Args:
@@ -117,6 +122,7 @@ def v_library(name, srcs, translate_from_c = False, v_flags = [], **kwargs):
         srcs: List of V or C source files
         translate_from_c: If true, translate C sources to V first
         v_flags: Additional V compiler flags
+        deps: Dependencies on other v_library targets
         **kwargs: Additional arguments passed to v_object
     """
     v_object(
@@ -125,5 +131,38 @@ def v_library(name, srcs, translate_from_c = False, v_flags = [], **kwargs):
         output_name = name,
         translate_from_c = translate_from_c,
         v_flags = v_flags,
+        **kwargs
+    )
+
+def v_test(name, srcs, v_flags = [], deps = [], **kwargs):
+    """Build and run V tests
+    
+    Args:
+        name: Name of the test target
+        srcs: List of V source files containing tests
+        v_flags: Additional V compiler flags
+        deps: Dependencies on other v_library targets
+        **kwargs: Additional arguments passed to native.sh_test
+    """
+    # Create a library from the test sources  
+    # Note: We pass test=true as a named flag, not a bare flag
+    test_flags = v_flags + ["test=true"]
+    
+    v_object(
+        name = name + "_lib",
+        srcs = srcs,
+        output_name = name + "_test",
+        v_flags = test_flags,
+    )
+    
+    # Collect all dependency data
+    data_deps = [":" + name + "_lib"] + deps
+    
+    # Create a test runner script (placeholder until V runner is available)
+    native.sh_test(
+        name = name,
+        srcs = ["//build:v_test_runner.sh"],
+        args = ["$(location :" + name + "_lib)"],
+        data = data_deps,
         **kwargs
     )

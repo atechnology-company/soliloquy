@@ -19,6 +19,9 @@ py_binary(
     python_version = "PY3",
 )
 
+# V test runner script
+exports_files(["v_test_runner.sh"])
+
 # Smoke test target for c2v tooling
 v_object(
     name = "c2v_tooling_smoke",

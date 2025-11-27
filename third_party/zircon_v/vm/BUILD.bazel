@@ -1,7 +1,24 @@
-load("//build:v_rules.bzl", "v_library")
+load("//build:v_rules.bzl", "v_library", "v_test")
+
+package(default_visibility = ["//visibility:public"])
 
 v_library(
     name = "zircon_v_vm",
-    srcs = ["zircon_vm.v"],
-    visibility = ["//visibility:public"],
+    srcs = [
+        "vm_types.v",
+        "pmm_arena_v2.v",
+        "vmo.v",
+        "page_fault_handler.v",
+        "zircon_vm.v",
+    ],
+)
+
+v_test(
+    name = "vm_test",
+    srcs = [
+        "vm_types.v",
+        "pmm_arena_v2.v",
+        "vmo.v",
+        "page_fault_handler.v",
+    ],
 )

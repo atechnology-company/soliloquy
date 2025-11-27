@@ -1,0 +1,7 @@
+{
+  "short_description": "HID input driver for touchscreen and buttons",
+  "manufacturer": "Soliloquy",
+  "families": ["hid", "input"],
+  "models": [],
+  "areas": ["Input"]
+}

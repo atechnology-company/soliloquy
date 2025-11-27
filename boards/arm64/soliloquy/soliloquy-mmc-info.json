@@ -1,0 +1,7 @@
+{
+  "short_description": "MMC/eMMC/SD storage driver for Allwinner A527",
+  "manufacturer": "Soliloquy",
+  "families": ["allwinner", "mmc", "storage"],
+  "models": [],
+  "areas": ["Storage"]
+}

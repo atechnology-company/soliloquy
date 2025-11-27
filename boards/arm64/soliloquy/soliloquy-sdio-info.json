@@ -1,0 +1,7 @@
+{
+  "short_description": "SDIO controller driver for Allwinner A527",
+  "manufacturer": "Soliloquy",
+  "families": ["allwinner", "sdio"],
+  "models": [],
+  "areas": ["Storage", "Connectivity"]
+}

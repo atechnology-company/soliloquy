@@ -1,0 +1,53 @@
+# Soliloquy Workspace Cargo Configuration
+# This file is used by crate_universe to resolve Rust dependencies
+
+[workspace]
+resolver = "2"
+members = [
+    "src/shell",
+    "test/support",
+    "gen/fidl/fuchsia_ui_composition",
+    "gen/fidl/fuchsia_ui_views",
+    "gen/fidl/fuchsia_ui_app",
+    "gen/fidl/fuchsia_input",
+    "third_party/fuchsia-sdk-rust/fidl",
+    "third_party/fuchsia-sdk-rust/fuchsia-async",
+    "third_party/fuchsia-sdk-rust/fuchsia-component",
+    "third_party/fuchsia-sdk-rust/fuchsia-syslog",
+    "third_party/fuchsia-sdk-rust/fuchsia-zircon",
+    "drivers/wifi/aic8800/aic8800_rust",
+    "drivers/wifi/aic8800/mock",
+    "drivers/generic",
+    "tools/build_manager/build_core",
+    "tools/build_manager/build_manager_cli",
+]
+
+# Exclude heavy dependencies - Servo is handled separately
+exclude = [
+    "vendor/servo",
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Core dependencies
+futures = "0.3"
+log = "0.4"
+env_logger = "0.10"
+
+# V8 Runtime
+rusty_v8 = "0.106"
+
+# Async runtime
+tokio = { version = "1.40", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Testing
+tokio-test = "0.4"

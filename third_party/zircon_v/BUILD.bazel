@@ -1,8 +1,10 @@
-load("//build:v_rules.bzl", "v_object")
+load("//build:v_rules.bzl", "v_object", "v_library", "v_test")
 
 package(default_visibility = ["//visibility:public"])
 
+# ============================================================================
 # HAL subsystem V translations
+# ============================================================================
 
 v_object(
     name = "zircon_v_hal_mmio",
@@ -37,4 +39,35 @@ filegroup(
         ":zircon_v_hal_clock_reset",
         ":zircon_v_hal_firmware",
     ],
+)
+
+# ============================================================================
+# Aggregate target for all V subsystems
+# Note: IPC, Scenic, and VM have their own subpackage BUILD files
+# ============================================================================
+
+filegroup(
+    name = "all",
+    srcs = [
+        ":zircon_v_hal",
+        "//third_party/zircon_v/ipc:zircon_v_ipc",
+        "//third_party/zircon_v/scenic:scenic",
+        "//third_party/zircon_v/vm:zircon_v_vm",
+    ],
+)
+
+# Aliases for convenient access from other packages
+alias(
+    name = "zircon_v_ipc",
+    actual = "//third_party/zircon_v/ipc:zircon_v_ipc",
+)
+
+alias(
+    name = "zircon_v_scenic",
+    actual = "//third_party/zircon_v/scenic:scenic",
+)
+
+alias(
+    name = "zircon_v_vm",
+    actual = "//third_party/zircon_v/vm:zircon_v_vm",
 )

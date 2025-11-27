@@ -6,9 +6,26 @@ A minimal, web-native operating system built on the Zircon microkernel with Serv
 
 Soliloquy is an experimental OS that brings web technologies to the system level. It uses:
 - **Zircon** - Microkernel from Fuchsia
-- **Servo** - Modern browser engine for UI
-- **V8** - JavaScript runtime
+- **Servo + V8** - Desktop environment (when display available)
+- **V Backend** - Cupboard memory storage and device sync
+- **Svelte 5 UI** - Modern reactive frontend
 - **WGPU** - Graphics via Vulkan
+
+### Modes of Operation
+
+**Desktop Mode** (monitor detected):
+- Full Servo + V8 desktop environment
+- Svelte UI with search, command bar, and memory storage
+- Google OAuth authentication
+- Real-time device sync
+
+**Headless Mode** (no monitor):
+- Cupboard sync server only
+- Device memory synchronization
+- REST API for remote access
+- Runs when no display connected to Zircon scenic
+
+See [docs/HEADLESS_MODE.md](docs/HEADLESS_MODE.md) for details.
 
 ## Target Hardware
 
@@ -39,14 +56,41 @@ Soliloquy is an experimental OS that brings web technologies to the system level
 
 ### Prerequisites
 
-**For macOS:**
-- macOS 10.15 or later
-- Homebrew (install from https://brew.sh)
+**For Desktop Mode:**
+- macOS 10.15+ or Linux with X11/Wayland
+- Homebrew (macOS) or apt/dnf (Linux)
+- Node.js 18+ with pnpm (`corepack enable pnpm`)
+- V language (https://vlang.io)
 - 10GB+ free disk space
 
-**For Linux:**
-- Fedora, RHEL, Debian, or Ubuntu
-- 10GB+ free disk space (20GB+ recommended for full source build)
+**For Headless Mode:**
+- Any Linux distribution (no GUI required)
+- V language (https://vlang.io)
+- 2GB+ free disk space
+
+### Running Soliloquy
+
+**Automatic Start** (detects display):
+```bash
+./tools/soliloquy/start.sh
+```
+
+**Manual Backend** (headless):
+```bash
+cd backend
+v run .
+```
+
+**Manual Desktop** (with UI):
+```bash
+# Terminal 1: Backend
+cd backend && v run .
+
+# Terminal 2: UI
+cd ui/desktop && pnpm dev
+```
+
+Visit `http://localhost:5173` in desktop mode.
 
 ### Setup on macOS (SDK-Only - Recommended)
 

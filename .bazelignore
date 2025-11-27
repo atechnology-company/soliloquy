@@ -2,3 +2,4 @@
 fuchsia
 out
 .git
+vendor/servo
