@@ -533,44 +533,44 @@ pub fn (mut self SunxiGpio) configure_i2c0() ZxStatus {
 // =============================================================================
 
 fn test_gpio_creation() {
-	gpio := SunxiGpio.default()
-	assert gpio.base == pio_base
-	assert gpio.r_base == pio_r_base
+	g := SunxiGpio.default()
+	assert g.base == pio_base
+	assert g.r_base == pio_r_base
 }
 
 fn test_port_reg_addr() {
-	gpio := SunxiGpio.default()
+	g := SunxiGpio.default()
 	
 	// Test main PIO port
-	addr := gpio.port_reg_addr(Pin{ port: .a, pin: 0 }, dat)
+	addr := g.port_reg_addr(Pin{ port: .a, pin: 0 }, dat)
 	assert addr == pio_base + u64(dat)
 	
 	// Test Port B
-	addr_b := gpio.port_reg_addr(Pin{ port: .b, pin: 0 }, dat)
+	addr_b := g.port_reg_addr(Pin{ port: .b, pin: 0 }, dat)
 	assert addr_b == pio_base + u64(port_offset) + u64(dat)
 }
 
 fn test_get_base_for_port() {
-	gpio := SunxiGpio.default()
+	g := SunxiGpio.default()
 	
 	// Main ports use pio_base
-	assert gpio.get_base_for_port(.a) == pio_base
-	assert gpio.get_base_for_port(.f) == pio_base
+	assert g.get_base_for_port(.a) == pio_base
+	assert g.get_base_for_port(.f) == pio_base
 	
 	// R_PIO ports use r_base
-	assert gpio.get_base_for_port(.l) == pio_r_base
-	assert gpio.get_base_for_port(.m) == pio_r_base
+	assert g.get_base_for_port(.l) == pio_r_base
+	assert g.get_base_for_port(.m) == pio_r_base
 }
 
 fn test_pin_configuration() {
 	// This would test against real hardware
 	// For unit tests, we'd use mocks
-	gpio := SunxiGpio.default()
+	g := SunxiGpio.default()
 	
 	// Test that functions exist and can be called
-	_ := gpio.get_function(uart0_tx)
-	_ := gpio.get_drive(uart0_tx)
-	_ := gpio.get_pull(uart0_tx)
+	_ := g.get_function(uart0_tx)
+	_ := g.get_drive(uart0_tx)
+	_ := g.get_pull(uart0_tx)
 }
 
 fn test_interrupt_mode_values() {

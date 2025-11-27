@@ -13,7 +13,7 @@ This document tracks the status of Linux driver translations to Fuchsia/Zircon f
 | **Bluetooth** | AIC8800D80 | aic8800_btlpm | 🔴 Not started | 🔴 |
 | **eMMC** | - | sdhci-sunxi | 🟡 V Translation | ✅ sunxi_mmc.v |
 | **SD Card** | - | sdhci-sunxi | 🟡 V Translation | ✅ sunxi_mmc.v |
-| **USB** | - | ehci/ohci-sunxi | 🔴 Not started | 🔴 |
+| **USB** | - | ehci/ohci-sunxi | ✅ V Translation | ✅ sunxi_usb.v |
 | **Ethernet** | - | stmmac | 🔴 Not started | 🔴 |
 | **GPIO** | Allwinner | gpio-sunxi | ✅ V Translation | ✅ sunxi_gpio.v |
 | **I2C** | Allwinner | i2c-mv64xxx | ✅ V Translation | ✅ sunxi_i2c.v |
@@ -28,10 +28,11 @@ All boot-critical drivers have been translated to V language in `third_party/zir
 
 | Driver | Files | Lines | Status |
 |--------|-------|-------|--------|
-| **MMC/SDHCI** | `mmc/sunxi_mmc_regs.v`, `mmc/sunxi_mmc.v` | ~2500 | ✅ Complete |
+| **MMC/SDHCI** | `mmc/sunxi_mmc_regs.v`, `mmc/sunxi_mmc.v` | ~1200 | ✅ Complete |
 | **Clock (CCU)** | `clock/a527_ccu_regs.v`, `clock/sunxi_ccu.v` | ~900 | ✅ Complete |
 | **GPIO** | `gpio/sunxi_gpio_regs.v`, `gpio/sunxi_gpio.v` | ~800 | ✅ Complete |
-| **I2C** | `i2c/sunxi_i2c_regs.v`, `i2c/sunxi_i2c.v` | ~700 | ✅ Complete |
+| **I2C** | `i2c/sunxi_i2c_regs.v`, `i2c/sunxi_i2c.v` | ~900 | ✅ Complete |
+| **USB** | `usb/sunxi_usb_regs.v`, `sunxi_usb.v`, `sunxi_ehci.v` | ~1400 | ✅ Complete |
 
 ### V Driver Features
 

@@ -279,7 +279,7 @@ pub fn (mut self SunxiI2c) transfer(msgs []I2cMessage) ZxStatus {
 // Process a single message
 fn (mut self SunxiI2c) process_message_locked() ZxStatus {
 	msg := &self.msgs[self.msg_idx]
-	is_read := .read in msg.flags
+	is_read := msg.flags.has(.read)
 	
 	// Wait for START to complete
 	if !self.wait_for_interrupt(10000) {
@@ -339,7 +339,7 @@ fn (mut self SunxiI2c) write_bytes_locked(msg &I2cMessage) ZxStatus {
 		}
 		
 		status := self.read_status()
-		if status == .data_tx_nack && .ignore_nack !in msg.flags {
+		if status == .data_tx_nack && !msg.flags.has(.ignore_nack) {
 			return .err_nack
 		}
 		if status != .data_tx_ack && status != .data_tx_nack {
@@ -413,14 +413,14 @@ pub fn (mut self SunxiI2c) write_read(addr u8, write_data []u8, read_len u16) ![
 }
 
 // Read a single register
-pub fn (mut self SunxiI2c) read_reg(addr u8, reg u8) !u8 {
-	data := self.write_read(addr, [reg], 1) or { return error('Read register failed') }
-	return data[0]
+pub fn (mut self SunxiI2c) read_reg(dev_addr u8, reg u8) !u8 {
+	result := self.write_read(dev_addr, [reg], 1) or { return error('Read register failed') }
+	return result[0]
 }
 
 // Write a single register
-pub fn (mut self SunxiI2c) write_reg(addr u8, reg u8, value u8) ZxStatus {
-	return self.write_bytes(addr, [reg, value])
+pub fn (mut self SunxiI2c) write_reg(dev_addr u8, reg u8, value u8) ZxStatus {
+	return self.write_bytes(dev_addr, [reg, value])
 }
 
 // Read multiple registers
@@ -440,9 +440,9 @@ pub fn (mut self SunxiI2c) scan() []u8 {
 	mut found := []u8{}
 	
 	// Standard I2C addresses are 0x03 to 0x77
-	for addr in u8(0x03) .. u8(0x78) {
-		if self.probe(addr) {
-			found << addr
+	for dev_addr in u8(0x03) .. u8(0x78) {
+		if self.probe(dev_addr) {
+			found << dev_addr
 		}
 	}
 	
@@ -498,37 +498,37 @@ pub fn (mut self SunxiI2c) recover_bus() ZxStatus {
 // =============================================================================
 
 fn test_i2c_creation() ! {
-	i2c := SunxiI2c.new(0)!
-	assert i2c.base == twi0_base
-	assert i2c.idx == 0
-	assert i2c.state == .idle
+	controller := SunxiI2c.new(0)!
+	assert controller.base == twi0_base
+	assert controller.idx == 0
+	assert controller.state == .idle
 }
 
 fn test_i2c_with_base() {
-	i2c := SunxiI2c.with_base(0x12340000, 99)
-	assert i2c.base == 0x12340000
-	assert i2c.idx == 99
+	controller := SunxiI2c.with_base(0x12340000, 99)
+	assert controller.base == 0x12340000
+	assert controller.idx == 99
 }
 
 fn test_i2c_speed_settings() {
-	mut i2c := SunxiI2c.with_base(0x12340000, 0)
+	mut controller := SunxiI2c.with_base(0x12340000, 0)
 	
 	// Default speed should be standard
-	assert i2c.target_speed == speed_standard
+	assert controller.target_speed == speed_standard
 }
 
 fn test_message_helpers() {
 	// Test write message
-	data := [u8(0xAB), 0xCD]
-	msg := write_message(0x50, data)
+	test_data := [u8(0xAB), 0xCD]
+	msg := write_message(0x50, test_data)
 	assert msg.addr == 0x50
-	assert .read !in msg.flags
-	assert msg.buf == data
+	assert !msg.flags.has(.read)
+	assert msg.buf == test_data
 	
 	// Test read message
 	read_msg := read_message(0x51, 4)
 	assert read_msg.addr == 0x51
-	assert .read in read_msg.flags
+	assert read_msg.flags.has(.read)
 	assert read_msg.len == 4
 }
 

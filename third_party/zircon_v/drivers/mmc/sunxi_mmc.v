@@ -9,7 +9,14 @@
 module mmc
 
 import sync
-import time
+
+// Simple microsecond delay (busy-wait for now)
+fn delay_us(us u32) {
+	mut count := us * 100
+	for count > 0 {
+		count--
+	}
+}
 
 // =============================================================================
 // Status codes (matching Zircon)
@@ -209,7 +216,7 @@ fn (mut c SunxiMmc) wait_for_reset(timeout_us u32) MmcStatus {
 		if (gctrl & reset_mask) == 0 {
 			return .ok
 		}
-		time.sleep(100 * time.microsecond)
+		delay_us(100)
 		elapsed += 100
 	}
 	
@@ -228,7 +235,7 @@ fn (mut c SunxiMmc) reset_fifo() MmcStatus {
 		if (gctrl & gctrl_fifo_reset) == 0 {
 			return .ok
 		}
-		time.sleep(10 * time.microsecond)
+		delay_us(10)
 		elapsed += 10
 	}
 	
@@ -271,7 +278,7 @@ pub fn (mut c SunxiMmc) set_clock(freq_hz u32) !u32 {
 }
 
 // Update clock register (enable/disable card clock)
-fn (mut c SunxiMmc) update_clock_register(enable bool) !void {
+fn (mut c SunxiMmc) update_clock_register(enable bool) ! {
 	mut clkctrl := c.mmio.read32(reg_clock_control)
 	
 	if enable {
@@ -292,7 +299,7 @@ fn (mut c SunxiMmc) update_clock_register(enable bool) !void {
 		if (cmd_reg & cmd_start) == 0 {
 			return
 		}
-		time.sleep(10 * time.microsecond)
+		delay_us(10)
 		elapsed += 10
 	}
 	
@@ -370,11 +377,11 @@ pub fn (mut c SunxiMmc) set_voltage(voltage SdmmcVoltage) MmcStatus {
 pub fn (mut c SunxiMmc) hw_reset() MmcStatus {
 	// Assert hardware reset (active low)
 	c.mmio.write32(reg_hardware_rst, 0)
-	time.sleep(10 * time.microsecond)
+	delay_us(10)
 	
 	// Deassert reset
 	c.mmio.write32(reg_hardware_rst, 1)
-	time.sleep(1 * time.millisecond)
+	delay_us(1000)  // 1ms
 	
 	return .ok
 }
@@ -491,7 +498,7 @@ fn (mut c SunxiMmc) wait_command_complete(timeout_us u32) MmcStatus {
 			return .ok
 		}
 		
-		time.sleep(10 * time.microsecond)
+		delay_us(10)
 		elapsed += 10
 	}
 	
@@ -517,7 +524,7 @@ fn (mut c SunxiMmc) wait_data_complete(timeout_us u32) MmcStatus {
 			return .ok
 		}
 		
-		time.sleep(10 * time.microsecond)
+		delay_us(10)
 		elapsed += 10
 	}
 	
@@ -607,7 +614,7 @@ pub fn (mut c SunxiMmc) execute_tuning(cmd_idx u32) MmcStatus {
 	
 	for delay in 0 .. 64 {
 		// Set sample delay
-		samp := (1 << 17) | delay  // enable bit + delay value
+		samp := u32((1 << 17) | delay)  // enable bit + delay value
 		c.mmio.write32(reg_samp_dl, samp)
 		
 		// Send tuning command (simplified)
@@ -675,20 +682,20 @@ pub fn (c &SunxiMmc) dump_registers() {
 // =============================================================================
 
 fn test_sunxi_mmc_new() {
-	mmc := SunxiMmc.new(0x4020000, .a527)
+	controller := SunxiMmc.new(0x4020000, .a527)
 	
-	assert mmc.soc_variant == .a527
-	assert mmc.caps.supports_hs400
-	assert mmc.bus_width == 1
-	assert mmc.timing == .legacy
+	assert controller.soc_variant == .a527
+	assert controller.caps.supports_hs400
+	assert controller.bus_width == 1
+	assert controller.timing == .legacy
 }
 
 fn test_build_cmd_reg() {
-	mmc := SunxiMmc.new(0x4020000, .a527)
+	controller := SunxiMmc.new(0x4020000, .a527)
 	
 	// CMD17 - Read single block with R1 response
 	flags := sdmmc_resp_len_48 | sdmmc_resp_crc_check | sdmmc_resp_data_present | sdmmc_cmd_read
-	cmd := mmc.build_cmd_reg(17, flags)
+	cmd := controller.build_cmd_reg(17, flags)
 	
 	assert (cmd & 0x3F) == 17
 	assert (cmd & cmd_start) != 0
@@ -698,28 +705,28 @@ fn test_build_cmd_reg() {
 }
 
 fn test_set_bus_width() {
-	mut mmc := SunxiMmc.new(0x4020000, .a527)
-	mmc.initialized = true  // Skip init for test
+	mut controller := SunxiMmc.new(0x4020000, .a527)
+	controller.initialized = true  // Skip init for test
 	
-	assert mmc.set_bus_width(1) == .ok
-	assert mmc.bus_width == 1
+	assert controller.set_bus_width(1) == .ok
+	assert controller.bus_width == 1
 	
-	assert mmc.set_bus_width(4) == .ok
-	assert mmc.bus_width == 4
+	assert controller.set_bus_width(4) == .ok
+	assert controller.bus_width == 4
 	
-	assert mmc.set_bus_width(8) == .ok
-	assert mmc.bus_width == 8
+	assert controller.set_bus_width(8) == .ok
+	assert controller.bus_width == 8
 	
 	// Invalid width
-	assert mmc.set_bus_width(3) == .err_invalid_args
+	assert controller.set_bus_width(3) == .err_invalid_args
 }
 
 fn test_set_timing() {
-	mut mmc := SunxiMmc.new(0x4020000, .a527)
+	mut controller := SunxiMmc.new(0x4020000, .a527)
 	
-	assert mmc.set_timing(.high_speed) == .ok
-	assert mmc.timing == .high_speed
+	assert controller.set_timing(.high_speed) == .ok
+	assert controller.timing == .high_speed
 	
-	assert mmc.set_timing(.ddr50) == .ok
-	assert mmc.timing == .ddr50
+	assert controller.set_timing(.ddr50) == .ok
+	assert controller.timing == .ddr50
 }

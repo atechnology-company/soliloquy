@@ -8,8 +8,6 @@
 
 module mmc
 
-import sync
-
 // =============================================================================
 // Register offsets
 // =============================================================================
@@ -388,7 +386,7 @@ fn test_build_command() {
 
 fn test_calc_clock_dividers() {
 	// 24MHz source, target 400kHz
-	m, n, actual := calc_clock_dividers(24_000_000, 400_000)
+	_, _, actual := calc_clock_dividers(24_000_000, 400_000)
 	
 	// Should get close to 400kHz
 	assert actual <= 400_000

@@ -252,19 +252,19 @@ pub fn status_description(status I2cStatus) string {
 }
 
 // Create a write message
-pub fn write_message(addr u8, data []u8) I2cMessage {
+pub fn write_message(write_addr u8, data []u8) I2cMessage {
 	return I2cMessage{
-		addr: u16(addr)
-		flags: MessageFlags{}
+		addr: u16(write_addr)
+		flags: unsafe { MessageFlags(0) }  // No flags for write
 		len: u16(data.len)
 		buf: data.clone()
 	}
 }
 
 // Create a read message
-pub fn read_message(addr u8, len u16) I2cMessage {
+pub fn read_message(read_addr u8, len u16) I2cMessage {
 	return I2cMessage{
-		addr: u16(addr)
+		addr: u16(read_addr)
 		flags: .read
 		len: len
 		buf: []u8{len: int(len)}
@@ -357,14 +357,14 @@ fn test_message_creation() {
 	msg := write_message(0x50, write_data)
 	
 	assert msg.addr == 0x50
-	assert .read !in msg.flags
+	assert !msg.flags.has(.read)
 	assert msg.len == 3
 	assert msg.buf == write_data
 	
 	// Read message
 	read_msg := read_message(0x50, 10)
 	assert read_msg.addr == 0x50
-	assert .read in read_msg.flags
+	assert read_msg.flags.has(.read)
 	assert read_msg.len == 10
 	assert read_msg.buf.len == 10
 }
