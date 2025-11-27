@@ -1,41 +1,33 @@
 #!/bin/bash
-# build_ui.sh - Build the Soliloquy UI (web-only version for now)
+# build_ui.sh - Build the Soliloquy Servo desktop UI (static bundle for Servo)
 
-set -e
+set -euo pipefail
 
-echo "=== Soliloquy Shell UI Build ==="
+echo "=== Soliloquy Servo Desktop UI Build ==="
 
 PROJECT_ROOT=$(pwd)
-UI_DIR="$PROJECT_ROOT/ui/tauri-shell"
+UI_DIR="$PROJECT_ROOT/ui/desktop"
 
 if [ ! -d "$UI_DIR" ]; then
-    echo "Error: Tauri UI directory not found at $UI_DIR"
+    echo "Error: Servo desktop UI directory not found at $UI_DIR"
+    exit 1
+fi
+
+if ! command -v pnpm &> /dev/null; then
+    echo "Error: pnpm not found. Enable it with: corepack enable pnpm"
     exit 1
 fi
 
 cd "$UI_DIR"
 
-# Check if dependencies are installed
 if [ ! -d "node_modules" ]; then
-    echo "[*] Installing dependencies..."
-    npm install
+    echo "[*] Installing dependencies with pnpm (Svelte v5 bundle)..."
+    pnpm install
 fi
 
-echo "[*] Building UI for production..."
+echo "[*] Building static bundle for Servo/V8 runtime..."
+pnpm build
 
-# Build the SvelteKit application
-npm run build
-
-if [ $? -eq 0 ]; then
-    echo "[*] Build successful!"
-    echo "Output is in: build/"
-    echo ""
-    echo "To serve the built files:"
-    echo "  npx serve build -p 3000"
-    echo ""
-    echo "Note: This is the web-only version. For the full desktop app,"
-    echo "install Rust and run: npm run tauri:build"
-else
-    echo "[*] Build failed!"
-    exit 1
-fi
+echo "[*] Build complete. Artifacts are in: build/"
+echo "    Serve with: pnpm dlx serve build -l 4173"
+echo "    Or point Servo to ui/desktop/build/index.html"

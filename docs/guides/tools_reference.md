@@ -310,9 +310,9 @@ Start UI prototype development server.
 ```
 
 **What it does**:
-- Starts Tauri development server
-- Enables hot reload
-- Opens dev tools
+- Runs the SvelteKit dev server via pnpm (Servo desktop shell)
+- Provides hot reload + HMR for the Servo/V8 runtime surface
+- Binds to port 5173 by default (override with VITE_PORT)
 
 ### `tools/soliloquy/build_ui.sh`
 Build UI prototype for production.

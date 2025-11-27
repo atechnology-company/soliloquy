@@ -139,7 +139,7 @@ soliloquy/
 ├── src/
 │   └── shell/              # Soliloquy Shell (Rust)
 ├── ui/
-│   └── tauri-shell/        # UI Prototype (Tauri + Svelte)
+│   └── desktop/            # Servo Desktop UI (Svelte v5)
 ├── drivers/
 │   └── wifi/aic8800/       # WiFi driver (C++)
 ├── boards/
@@ -175,14 +175,14 @@ Uses Bazel with Bzlmod (MODULE.bazel):
 
 ### UI Development
 
-The Soliloquy shell UI is prototyped using Tauri + Svelte for rapid development and design iteration:
+The Soliloquy shell UI is authored in Svelte v5 and served directly to the Servo + V8 runtime:
 
 ```bash
 # Start the UI development server
 ./tools/soliloquy/dev_ui.sh
 
 # Or manually:
-cd ui/tauri-shell && npm install && npm run tauri:dev
+cd ui/desktop && pnpm install && pnpm dev
 ```
 
 ## Architecture
@@ -249,7 +249,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 ## Recent Updates
 
 **Latest PRs:**
-- PR #5: Tauri UI scaffold
+- PR #5: Servo desktop UI scaffold
 - PR #4: macOS build stabilization
 - PR #3: fx tooling hardening
 - PR #2: V8 runtime integration

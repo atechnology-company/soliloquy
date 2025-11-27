@@ -279,7 +279,7 @@ bazel build //src/my_component:my_component
 ./tools/soliloquy/dev_ui.sh
 ```
 
-This launches the Tauri-based UI prototype with hot reload.
+This launches the Servo/V8 desktop shell (SvelteKit) with hot reload.
 
 ### Port a Driver
 
